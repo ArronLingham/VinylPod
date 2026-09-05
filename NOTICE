@@ -1,0 +1,37 @@
+VinylPod - NOTICE
+
+VinylPod is a macOS music player built from source extracted out of Anchor,
+which is a personal fork of Atoll (DynamicIsland), which is itself derived from
+boring.notch. It is not affiliated with or endorsed by the Atoll or boring.notch
+projects.
+
+The derivation chain, in full:
+
+    boring.notch          GPL-3.0   https://github.com/TheBoredTeam/boring.notch
+      -> Atoll (DynamicIsland)  GPL-3.0
+        -> Anchor           GPL-3.0 (private)
+          -> VinylPod       GPL-3.0 (this project)
+
+Every file carried across retains its original copyright header
+("Copyright (C) 2024-2026 Atoll Contributors") as the GPL requires. Only the
+title line above it names this project. Do not strip these headers.
+
+See the LICENSE file for the full GPL v3 text.
+
+---
+
+The audio spectrum processor (Sources/Visualizer/AudioProcessor.cpp,
+AudioProcessor.hpp, AudioBridge.h, AudioBridge.mm) is derived from FineTune:
+
+    FineTune
+    Copyright (C) 2026 Ronit Singh
+    https://github.com/ronitsingh10/FineTune
+    Licensed under the GNU General Public License v3.0
+
+---
+
+VinylPod uses the following third-party packages, each under its own licence:
+
+    Defaults          MIT     https://github.com/sindresorhus/Defaults
+    SkyLightWindow    MIT     https://github.com/Lakr233/SkyLightWindow
+    LottieUI          MIT     https://github.com/jasudev/LottieUI

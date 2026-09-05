@@ -1,0 +1,30 @@
+# macOS
+.DS_Store
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# SPM
+.swiftpm/
+.build/
+Packages/
+
+# Coverage / profiling
+*.profraw
+*.profdata
+
+# Scratch — but keep the harnesses and the sampler.
+# Anchor's .gitignore excluded *.sh outright, so scripts/ silently staged
+# nothing for weeks. Check `git check-ignore -v <path>` if a file you add
+# does not show up in `git status`.
+/tmp/
+scratchpad/
