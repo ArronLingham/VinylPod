@@ -231,9 +231,13 @@ manager decoding all four layouts from JSON several times per resize event.
 
 | Build | mean | median | p90 | max | RSS |
 |---|---|---|---|---|---|
-| Release, idle, 19 min uptime, shipped defaults | **0.01%** | 0.00% | 0.00% | 0.48% | **12.5 MB** |
+| Release, idle, 19 min uptime, shipped defaults | 0.01% | 0.00% | 0.00% | 0.48% | 12.5 MB |
+| Release, same, after the review fixes | 0.03% | 0.00% | 0.00% | 0.95% | 13.2 MB |
 
-87 samples over 180 s. RSS settled 72 → 28 → 12.5 MB over roughly 20 minutes;
+87 and 86 samples over 180 s. **The two rows are the same number.** Both have a
+median and p90 of 0.00, so the mean is carried entirely by a noisy tail, and
+this project's own rule is not to read a change of less than roughly 2x as
+signal. Do not quote the second row as a regression or the first as a win. RSS settled 72 → 28 → 12.5 MB over roughly 20 minutes;
 the reading at 5 minutes would have been about six times too high.
 
 That is below Anchor's best recorded row (16 MB) and its best idle CPU (0.03%),
