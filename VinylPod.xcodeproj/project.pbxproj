@@ -216,6 +216,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "VinylPod controls Music, Spotify and other players with Apple Events to read what is playing and to change tracks.";
+				INFOPLIST_KEY_NSAppleMusicUsageDescription = "VinylPod reads your Apple Music library to fetch animated album artwork for the track you are playing.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "GPL-3.0. Derived from Anchor, Atoll and boring.notch.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "VinylPod reads system audio levels to draw the visualiser. Nothing is recorded.";
 				// vDSP (biquad, rmsqv) in the C++ spectrum processor.
@@ -251,6 +252,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "VinylPod controls Music, Spotify and other players with Apple Events to read what is playing and to change tracks.";
+				INFOPLIST_KEY_NSAppleMusicUsageDescription = "VinylPod reads your Apple Music library to fetch animated album artwork for the track you are playing.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "GPL-3.0. Derived from Anchor, Atoll and boring.notch.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "VinylPod reads system audio levels to draw the visualiser. Nothing is recorded.";
 				// vDSP (biquad, rmsqv) in the C++ spectrum processor.

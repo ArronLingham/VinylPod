@@ -164,6 +164,23 @@ Both of these were real, and both were found only by driving the running app.
 | Output device / volume elements | none | built, live |
 | AirPlay element | Apple Events (Music) | built, unverified |
 
+**A missing usage description is a CRASH, not a prompt.** VinylPod died with
+SIGABRT inside `__TCC_CRASHING_DUE_TO_PRIVACY_VIOLATION__` because
+`AnimatedArtworkManager` calls `MusicAuthorization.request()` and the Info.plist
+had no `NSAppleMusicUsageDescription`. There is no dialog and no error return —
+macOS simply kills the process. The crash report names the missing key exactly,
+which is the fastest way to diagnose it.
+
+The built tree touches exactly two TCC-gated APIs, and both are covered:
+`MusicAuthorization` (`NSAppleMusicUsageDescription`) and
+`AudioHardwareCreateProcessTap` (`NSMicrophoneUsageDescription` plus the
+`com.apple.security.device.audio-input` entitlement). Re-run that audit when
+adding a framework:
+
+```bash
+grep -rhoE '^import (MusicKit|EventKit|Speech|AVFoundation|Contacts|Photos|CoreLocation|CoreBluetooth|ScreenCaptureKit)' Sources --include='*.swift' | sort -u
+```
+
 **TCC grants bind to the code signature, not the bundle id.** An ad-hoc signed
 Debug build does not inherit them, so anything gated on a permission can only be
 tested in a signed build.
