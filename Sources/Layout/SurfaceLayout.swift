@@ -1,0 +1,212 @@
+/*
+ * VinylPod
+ * Copyright (C) 2026 VinylPod Contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import CoreGraphics
+import Foundation
+
+// Pure by design — no SwiftUI, no Defaults. See the note in PlayerElement.swift.
+
+/// The four places a player is drawn.
+///
+/// They share the playback core and this layout engine, and **nothing else**.
+/// A change to one surface's layout must never move an element on another. This
+/// is the requirement most likely to get broken by a convenient shortcut,
+/// because the code VinylPod was extracted from does the opposite: Anchor keeps
+/// one global `musicControlSlots` array that every surface reads.
+public enum PlayerSurface: String, CaseIterable, Codable, Sendable {
+    /// The free-floating desktop widget. Mouse-resizable, hover-reveals,
+    /// sends itself to the back on a double-click of dead space.
+    case desktop
+    /// The small lock-screen widget.
+    case lockWidget
+    /// The lock-screen full-screen player.
+    case lockFull
+    /// The now-playing card in Anchor's launcher. Built here, wired up at
+    /// Anchor integration — VinylPod has no launcher of its own.
+    case launcher
+
+    public var displayName: String {
+        switch self {
+        case .desktop: return String(localized: "Desktop player")
+        case .lockWidget: return String(localized: "Lock screen widget")
+        case .lockFull: return String(localized: "Lock screen full screen")
+        case .launcher: return String(localized: "Launcher widget")
+        }
+    }
+}
+
+/// Whether an element is always drawn, or only while the pointer is over the
+/// surface.
+public enum ElementVisibility: String, Codable, Sendable {
+    case always
+    case onHover
+}
+
+/// Whether an element sits in the grid or on top of what is already there.
+///
+/// This distinction is what makes the hover requirement work. Two `base`
+/// elements may not share a cell. An `overlay` may sit on a base one, adds no
+/// height, and therefore causes no growth — so a hover-only play button placed
+/// over the artwork reveals without resizing the window, while a hover-only
+/// progress bar placed as `base` on its own row makes the window taller.
+public enum ElementLayer: String, Codable, Sendable {
+    case base
+    case overlay
+}
+
+/// One element, somewhere on one surface.
+public struct ElementPlacement: Codable, Hashable, Identifiable, Sendable {
+    /// Stable across edits so SwiftUI keeps hold of a cell mid-drag, and so the
+    /// same element may legitimately appear twice on a surface (two clocks, or
+    /// a progress ring on the artwork *and* a scrubbing bar below it).
+    public var id: UUID
+
+    public var element: PlayerElement
+    public var col: Int
+    public var row: Int
+    public var colSpan: Int
+    public var layer: ElementLayer
+    public var visibility: ElementVisibility
+
+    /// Drop order when there is not enough room. `0` is never dropped; higher
+    /// values go first. One ordering the user maintains once, rather than a
+    /// separate layout per size.
+    public var priority: Int
+
+    /// Only read for `.artwork`. Ignored elsewhere.
+    public var artworkStyle: ArtworkStyle
+
+    public init(
+        id: UUID = UUID(),
+        element: PlayerElement,
+        col: Int,
+        row: Int,
+        colSpan: Int = 1,
+        layer: ElementLayer = .base,
+        visibility: ElementVisibility = .always,
+        priority: Int = 0,
+        artworkStyle: ArtworkStyle = .vinyl
+    ) {
+        self.id = id
+        self.element = element
+        self.col = col
+        self.row = row
+        self.colSpan = colSpan
+        self.layer = layer
+        self.visibility = visibility
+        self.priority = priority
+        self.artworkStyle = artworkStyle
+    }
+
+    /// Columns this placement occupies, as a half-open range.
+    public var columns: Range<Int> { col..<(col + colSpan) }
+
+    /// Decoding tolerates a placement written by a future version that has since
+    /// gained fields, and an `id` that predates it being stored.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        element = try c.decode(PlayerElement.self, forKey: .element)
+        col = try c.decode(Int.self, forKey: .col)
+        row = try c.decode(Int.self, forKey: .row)
+        colSpan = try c.decodeIfPresent(Int.self, forKey: .colSpan) ?? 1
+        layer = try c.decodeIfPresent(ElementLayer.self, forKey: .layer) ?? .base
+        visibility = try c.decodeIfPresent(ElementVisibility.self, forKey: .visibility) ?? .always
+        priority = try c.decodeIfPresent(Int.self, forKey: .priority) ?? 0
+        artworkStyle = try c.decodeIfPresent(ArtworkStyle.self, forKey: .artworkStyle) ?? .vinyl
+    }
+}
+
+/// The grid geometry a surface is laid out in.
+public struct GridGeometry: Codable, Hashable, Sendable {
+    /// Fixed per surface. The widget never grows horizontally, so this does not
+    /// change with size.
+    public var columns: Int
+    public var padding: CGFloat
+    public var gutter: CGFloat
+
+    public init(columns: Int, padding: CGFloat = 14, gutter: CGFloat = 8) {
+        self.columns = columns
+        self.padding = padding
+        self.gutter = gutter
+    }
+}
+
+/// One surface's saved arrangement.
+public struct SurfaceLayout: Codable, Hashable, Sendable {
+    public var geometry: GridGeometry
+    public var placements: [ElementPlacement]
+
+    public init(geometry: GridGeometry, placements: [ElementPlacement]) {
+        self.geometry = geometry
+        self.placements = placements
+    }
+}
+
+/// All four, in one value.
+///
+/// One `Defaults` key holding this rather than four keys: one atomic write, one
+/// migration, and it is structurally impossible for two surfaces to end up
+/// sharing a layout by accident.
+public struct PlayerLayouts: Codable, Hashable, Sendable {
+    public var desktop: SurfaceLayout
+    public var lockWidget: SurfaceLayout
+    public var lockFull: SurfaceLayout
+    public var launcher: SurfaceLayout
+
+    public subscript(surface: PlayerSurface) -> SurfaceLayout {
+        get {
+            switch surface {
+            case .desktop: return desktop
+            case .lockWidget: return lockWidget
+            case .lockFull: return lockFull
+            case .launcher: return launcher
+            }
+        }
+        set {
+            switch surface {
+            case .desktop: desktop = newValue
+            case .lockWidget: lockWidget = newValue
+            case .lockFull: lockFull = newValue
+            case .launcher: launcher = newValue
+            }
+        }
+    }
+
+    /// A surface missing from stored JSON falls back to its default rather than
+    /// failing the whole decode — otherwise adding a fifth surface later (the
+    /// notch, at Anchor integration) would reset every existing layout.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = PlayerLayouts.defaults
+        desktop = try c.decodeIfPresent(SurfaceLayout.self, forKey: .desktop) ?? d.desktop
+        lockWidget = try c.decodeIfPresent(SurfaceLayout.self, forKey: .lockWidget) ?? d.lockWidget
+        lockFull = try c.decodeIfPresent(SurfaceLayout.self, forKey: .lockFull) ?? d.lockFull
+        launcher = try c.decodeIfPresent(SurfaceLayout.self, forKey: .launcher) ?? d.launcher
+    }
+
+    public init(
+        desktop: SurfaceLayout, lockWidget: SurfaceLayout,
+        lockFull: SurfaceLayout, launcher: SurfaceLayout
+    ) {
+        self.desktop = desktop
+        self.lockWidget = lockWidget
+        self.lockFull = lockFull
+        self.launcher = launcher
+    }
+}

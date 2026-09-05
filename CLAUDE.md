@@ -388,6 +388,22 @@ check that was provably dead, twice.
 
 ---
 
+## Status
+
+| Phase | State |
+|---|---|
+| 0 — repo, project, CLAUDE.md | **done** |
+| 1 — the extraction builds | **done**; 0 errors, launches, status item verified via AX |
+| 2 — layout engine | **done**; `GridSolver` + four defaults, 70/70 in `tests/run_gridsolver_tests.sh` |
+| 3 — desktop player | next |
+| 4 — lock screen | not started |
+| 5 — launcher widget | not started |
+
+`Reference/` holds seven extracted files that are coupled to Anchor's notch or
+lock screen and are **not in the target**. `Reference/README.md` says what each
+is worth porting for. Do not add one to the build without resolving the coupling
+it lists.
+
 ## Build
 
 ```bash
