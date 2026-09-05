@@ -24,3 +24,5 @@ Retiring these two mattered rather than being tidiness: `enableVinylWidget`
 would otherwise have stayed a live Defaults key able to put a *second*,
 superseded desktop widget on screen alongside the real one, with no UI saying
 so. That is the dead-switch trap in its most literal form.
+
+| `MusicControlButton.swift` | superseded | The five-slot, button-only model on one global key that `PlayerElement` replaces. Kept because `DefaultLayouts.swift` cites its slot positions as the source of the desktop transport arrangement, and because Anchor still uses it — folding VinylPod back in means reconciling the two. Its `musicControlSlots` key is gone: a live Defaults key backed by a type nothing drew from is a dead switch by this project's own definition. |

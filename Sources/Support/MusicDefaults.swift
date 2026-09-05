@@ -38,7 +38,6 @@ extension Defaults.Keys {
     static let lyricsTranslationEnabled = Key<Bool>("lyricsTranslationEnabled", default: false)
     static let lyricsVisibleLines = Key<Int>("lyricsVisibleLines", default: 0)
     static let mediaController = Key<MediaControllerType>("mediaController", default: defaultMediaController)
-    static let musicControlSlots = Key<[MusicControlButton]>("musicControlSlots", default: MusicControlButton.defaultLayout)
     static let musicControlWindowEnabled = Key<Bool>("musicControlWindowEnabled", default: false)
     static let musicGestureBehavior = Key<MusicSkipBehavior>("musicGestureBehavior", default: .track)
     static let musicSkipBehavior = Key<MusicSkipBehavior>("musicSkipBehavior", default: .track)
@@ -111,6 +110,20 @@ extension Defaults.Keys {
     static let lockFullBackground = Key<LockFullBackground>(
         "lockFullBackground", default: .blurredArtwork)
 
+    /// The launcher card. Read by `LauncherPlayerWidget`, which is built but not
+    /// reachable until VinylPod folds into Anchor -- so these two are the one
+    /// pair of keys here that legitimately have no live consumer yet, and the
+    /// settings pane does NOT offer them for that reason.
+    static let launcherWidgetSize = Key<LauncherPlayerWidget.Size>(
+        "launcherWidgetSize", default: .regular)
+    static let launcherAlwaysShowsControls = Key<Bool>(
+        "launcherAlwaysShowsControls", default: false)
+
+    //   musicControlSlots                  the five-slot MusicControlButton
+    //                                       model PlayerElement replaces. It was
+    //                                       still a live key backed by a type
+    //                                       nothing drew from -- a dead switch by
+    //                                       this file's own definition.
     //   the ten vinyl* / launcherShowVinylWidget keys
     //                                       retired with VinylWidgetView, which
     //                                       PlayerSurfaceView supersedes. Left in

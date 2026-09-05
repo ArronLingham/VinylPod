@@ -66,6 +66,34 @@ Verified by preview: the widget draws at 380x175, the full-screen player at
 Lock the screen once, by hand, and check: the widget appears, double-clicking
 the artwork expands it to full screen, and both are gone after unlocking.
 
+## Layout editor
+
+Settings → Layout. The preview is the real `PlayerSurfaceView` bound to
+`PlayerSnapshot.sample` — a fixed track with a deliberately long title (so
+truncation is visible), a separate album name (so the two text elements are
+distinguishable) and 3:42 split 1:18 / -2:24 (so the two time readouts are).
+
+Verified live: the window opens at 820x724, the preview draws the real record
+and sample metadata, and **dragging persists** — moving the Previous button
+wrote `previous` from column 1 to column 0 in `playerLayouts` and touched
+nothing else.
+
+Worth checking by hand:
+
+- **Drag onto an occupied cell.** It must be refused, not squeezed in. A no-op
+  is correct: two base placements sharing a cell is the grid's one invariant.
+- **Drag below the last row.** That makes a new bottom row.
+- **Add every element from the palette** and confirm each draws something. Four
+  of them (`outputDevice`, `airPlay`, `volumeSlider`, `timer`) were inert icons
+  until recently and are the ones most likely to regress.
+- **Overlay vs in-the-grid**, in the inspector. Set an element to overlay and
+  mark it hover-only; the surface must not grow when the hover preview is on.
+  Set it back to in-the-grid and it must.
+- **Priority 0** must survive shrinking the desktop player to its minimum.
+- **Reset this surface** returns exactly the shipped default.
+- **Switch surfaces and come back.** Each of the four is independent; a change
+  to one must never move an element on another.
+
 ## What only a person can check
 
 In rough order of how bad it would be to get wrong.
@@ -132,7 +160,9 @@ Both of these were real, and both were found only by driving the running app.
 |---|---|---|
 | Reading playback from Music / Spotify / Amazon | Apple Events | prompts on first use |
 | The audio visualiser element | audio-capture | entitlement declared, unexercised |
-| Lock-screen surfaces (Phase 4) | none, but uses private SkyLight API | not built |
+| Lock-screen surfaces | none, but uses private SkyLight API | built, unverified on a real lock |
+| Output device / volume elements | none | built, live |
+| AirPlay element | Apple Events (Music) | built, unverified |
 
 **TCC grants bind to the code signature, not the bundle id.** An ad-hoc signed
 Debug build does not inherit them, so anything gated on a permission can only be

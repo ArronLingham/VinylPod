@@ -24,12 +24,14 @@ import SwiftUI
 /// This is the single renderer. Anchor has the same `switch` copy-pasted into
 /// `NotchHomeView`, `MinimalisticMusicPlayerView` and `LockScreenMusicPanel`,
 /// and hardcoded outright in `MusicControlOverlay` and `VinylWidgetView` — five
-/// places to edit to add one control. Here the *style* is injected and the
-/// switch is written once.
+/// places to edit to add one control. Here the *style* and the *data* are
+/// injected and the switch is written once.
 struct PlayerSurfaceView: View {
     let layout: SurfaceLayout
     let style: SurfaceStyle
     var hovering: Bool = false
+    /// Frozen data for the settings preview. `nil` means live playback.
+    var snapshot: PlayerSnapshot?
 
     @ObservedObject private var music = MusicManager.shared
 
@@ -37,12 +39,14 @@ struct PlayerSurfaceView: View {
         GeometryReader { geo in
             let resolved = GridSolver.solve(
                 layout: layout, available: geo.size, hovering: hovering)
+            let data = snapshot ?? .live(music)
+            let actions = snapshot == nil ? PlayerActions.live(music) : .inert
             ZStack(alignment: .topLeading) {
                 // `elements` arrives base-first then overlay, which is the draw
                 // order — the renderer needs no z-index of its own.
                 ForEach(resolved.elements, id: \.placement.id) { element in
                     PlayerElementView(
-                        placement: element.placement, style: style, music: music
+                        placement: element.placement, style: style, data: data, actions: actions
                     )
                     .frame(width: element.frame.width, height: element.frame.height)
                     .offset(x: element.frame.minX, y: element.frame.minY)
@@ -59,13 +63,11 @@ struct SurfaceStyle {
     var ink: Color
     var subtleInk: Color
     var accent: Color
-    /// Multiplies every font size. The launcher card is small; the lock-screen
-    /// full-screen player is not.
+    /// Multiplies every font size. Comes from the layout's own
+    /// `GridGeometry.contentScale`, which also drives the row heights — two
+    /// separate constants is how a 24pt title ended up in a 20pt row.
     var textScale: CGFloat
 
-    /// `scale` comes from the layout's own `GridGeometry.contentScale`, not
-    /// from a table here — the row heights use the same number, and two
-    /// separate constants is how a 24pt title ended up in a 20pt row.
     static func forSurface(
         _ surface: PlayerSurface, albumColor: NSColor, tinted: Bool, scale: CGFloat
     ) -> SurfaceStyle {
@@ -106,47 +108,48 @@ struct SurfaceStyle {
 struct PlayerElementView: View {
     let placement: ElementPlacement
     let style: SurfaceStyle
-    @ObservedObject var music: MusicManager
+    let data: PlayerSnapshot
+    let actions: PlayerActions
 
     @State private var showingRemaining = false
 
     var body: some View {
         switch placement.element {
         case .artwork: artwork
-        case .title: text(music.songTitle, size: 15, weight: .semibold)
-        case .artist: text(music.artistName, size: 12, weight: .regular, subtle: true)
-        case .album: text(music.album, size: 12, weight: .regular, subtle: true)
+        case .title: text(data.title, size: 15, weight: .semibold)
+        case .artist: text(data.artist, size: 12, weight: .regular, subtle: true)
+        case .album: text(data.album, size: 12, weight: .regular, subtle: true)
 
         case .playPause:
-            button(music.isPlaying ? "pause.fill" : "play.fill", scale: 1.25) {
-                music.playPause()
-            }
-        case .next: button("forward.end.fill") { music.nextTrack() }
-        case .previous: button("backward.end.fill") { music.previousTrack() }
-        case .seekForward: button("goforward.10") { music.seek(by: 10) }
-        case .seekBackward: button("gobackward.10") { music.seek(by: -10) }
+            button(
+                data.isPlaying ? "pause.fill" : "play.fill", scale: 1.25, action: actions.playPause)
+        case .next: button("forward.end.fill", action: actions.next)
+        case .previous: button("backward.end.fill", action: actions.previous)
+        case .seekForward: button("goforward.10") { actions.seekBy(10) }
+        case .seekBackward: button("gobackward.10") { actions.seekBy(-10) }
         case .shuffle:
-            button("shuffle", active: music.isShuffled) { music.toggleShuffle() }
+            button("shuffle", active: data.isShuffled, action: actions.toggleShuffle)
         case .repeatMode:
-            button(music.repeatMode == .one ? "repeat.1" : "repeat",
-                   active: music.repeatMode != .off) { music.toggleRepeat() }
-        case .lyrics: lyrics
+            button(
+                data.repeatMode == .one ? "repeat.1" : "repeat",
+                active: data.repeatMode != .off, action: actions.toggleRepeat)
 
         case .progressBar: progressBar
         case .timeElapsed: timeLabel { Self.timestamp($0) }
         case .timeRemaining:
-            timeLabel { "-" + Self.timestamp(max(0, self.music.songDuration - $0)) }
+            timeLabel { "-" + Self.timestamp(max(0, self.data.duration - $0)) }
         case .trackTimeToggle: trackTimeToggle
 
-        case .outputDevice: button("speaker.wave.2") {}
-        case .airPlay: button("airplayaudio") {}
-        case .volumeSlider: placeholder("speaker.wave.2")
+        case .lyrics: lyrics
+        case .outputDevice: OutputDeviceElement(style: style)
+        case .airPlay: AirPlayElement(style: style)
+        case .volumeSlider: VolumeElement(style: style)
         case .visualizer: visualizer
 
         case .appIcon: appIcon
         case .explicitBadge: explicitBadge
         case .clock: clock
-        case .timer: placeholder("timer")
+        case .timer: PlayerTimerElement(style: style)
         }
     }
 
@@ -159,21 +162,22 @@ struct PlayerElementView: View {
     /// the middle of an empty half-screen.
     @ViewBuilder private var lyrics: some View {
         if placement.colSpan >= 3 {
-            if music.syncedLyrics.isEmpty {
-                Text(music.currentLyrics.isEmpty ? "" : music.currentLyrics)
+            if data.hasSyncedLyrics {
+                SyncedLyricsList(
+                    currentSize: 15 * style.textScale, otherSize: 12 * style.textScale,
+                    lineSpacing: 10 * style.textScale, fitted: true, fittedCapacity: 5,
+                    linesBefore: 1
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                Text(data.currentLyric)
                     .font(.system(size: 15 * style.textScale, weight: .medium))
                     .foregroundStyle(style.subtleInk)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                SyncedLyricsList(
-                    currentSize: 15 * style.textScale, otherSize: 12 * style.textScale,
-                    lineSpacing: 10 * style.textScale, fitted: true, fittedCapacity: 5,
-                    linesBefore: 1)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         } else {
-            button("quote.bubble", active: music.showLyrics) { music.toggleLyrics() }
+            button("quote.bubble", active: data.showLyrics, action: actions.toggleLyrics)
         }
     }
 
@@ -188,34 +192,30 @@ struct PlayerElementView: View {
                     // labelFraction 0.46 matches what VinylWidgetView passes;
                     // the view's own default of 0.38 is for a smaller record.
                     VinylRecordRepresentable(
-                        artwork: music.albumArt,
-                        isPlaying: music.isPlaying,
-                        labelFraction: 0.46)
-                    if placement.artworkStyle.showsStylus {
-                        tonearm(side: side)
-                    }
+                        artwork: data.artwork, isPlaying: data.isPlaying, labelFraction: 0.46)
+                    if placement.artworkStyle.showsStylus { tonearm(side: side) }
                 case .cover:
-                    Image(nsImage: music.albumArt)
+                    Image(nsImage: data.artwork)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(width: side, height: side)
                         .clipShape(RoundedRectangle(cornerRadius: side * 0.06, style: .continuous))
                 }
-                if placement.artworkStyle.showsProgressRing {
-                    progressRing(side: side)
-                }
+                if placement.artworkStyle.showsProgressRing { progressRing(side: side) }
             }
             .frame(width: side, height: side)
             .frame(width: geo.size.width, height: geo.size.height)
             // The record is itself the largest play/pause target, which is how
             // the vinyl widget already behaves.
-            .contentShape(placement.artworkStyle.kind == .vinyl ? AnyShape(Circle()) : AnyShape(Rectangle()))
-            .onTapGesture { music.playPause() }
+            .contentShape(
+                placement.artworkStyle.kind == .vinyl ? AnyShape(Circle()) : AnyShape(Rectangle())
+            )
+            .onTapGesture(perform: actions.playPause)
         }
     }
 
     private func progressRing(side: CGFloat) -> some View {
-        TimelineView(.periodic(from: .now, by: music.isPlaying ? 0.25 : 60)) { context in
+        TimelineView(.periodic(from: .now, by: data.isPlaying ? 0.25 : 60)) { context in
             Circle()
                 .trim(from: 0, to: fraction(at: context.date))
                 .stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round))
@@ -223,6 +223,38 @@ struct PlayerElementView: View {
                 .rotationEffect(.degrees(-90))
                 .frame(width: side * 1.045, height: side * 1.045)
         }
+    }
+
+    /// The tonearm, ported from `VinylWidgetView`. It lives here rather than in
+    /// `VinylRecordView` because that view is CALayer-based and deliberately
+    /// rotates everything it owns — an arm inside it would spin with the record.
+    private func tonearm(side: CGFloat) -> some View {
+        let pivot = side * 0.16
+        let armLength = side * 0.50
+        return ZStack(alignment: .top) {
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [.white.opacity(0.95), Color(white: 0.62)],
+                        center: .init(x: 0.35, y: 0.3), startRadius: 0, endRadius: pivot * 0.7)
+                )
+                .frame(width: pivot, height: pivot)
+                .shadow(color: .black.opacity(0.25), radius: 3, y: 1)
+            VStack(spacing: 0) {
+                Capsule()
+                    .fill(Color(white: 0.28))
+                    .frame(width: max(2.5, side * 0.019), height: armLength)
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .fill(Color(white: 0.22))
+                    .frame(width: side * 0.07, height: side * 0.072)
+            }
+            .offset(y: pivot * 0.45)
+            .rotationEffect(.degrees(data.isPlaying ? 32 : 12), anchor: .top)
+            .animation(.spring(response: 0.75, dampingFraction: 0.82), value: data.isPlaying)
+        }
+        .frame(width: pivot, alignment: .top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+        .allowsHitTesting(false)
     }
 
     // MARK: Text
@@ -253,31 +285,22 @@ struct PlayerElementView: View {
         .buttonStyle(.plain)
     }
 
-    private func placeholder(_ symbol: String) -> some View {
-        Image(systemName: symbol)
-            .font(.system(size: 12 * style.textScale))
-            .foregroundStyle(style.subtleInk)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
     // MARK: Progress and time
 
     /// Interpolated locally rather than driven by a publish per frame.
     ///
     /// `MusicManager` is event-driven: `elapsedTime` is assigned when the
-    /// controller reports a time change, not on a tick. `estimatedPlaybackPosition`
-    /// projects forward from that using `timestampDate` and `playbackRate`, so a
-    /// `TimelineView` can animate smoothly while the manager stays quiet. This
-    /// is the pattern that keeps the notch player cheap in Anchor, and it is the
-    /// reason a 27-property `@Published` object does not re-render the world.
+    /// controller reports a time change, not on a tick. The snapshot's
+    /// `position` projects forward from that using `timestampDate` and
+    /// `playbackRate`, so a `TimelineView` animates smoothly while the manager
+    /// stays quiet.
     private func fraction(at date: Date) -> CGFloat {
-        guard music.songDuration > 0, music.songDuration.isFinite else { return 0 }
-        let position = music.estimatedPlaybackPosition(at: date)
-        return min(max(position / music.songDuration, 0), 1)
+        guard data.duration > 0, data.duration.isFinite else { return 0 }
+        return min(max(data.position(date) / data.duration, 0), 1)
     }
 
     private var progressBar: some View {
-        TimelineView(.periodic(from: .now, by: music.isPlaying ? 0.25 : 60)) { context in
+        TimelineView(.periodic(from: .now, by: data.isPlaying ? 0.25 : 60)) { context in
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule().fill(style.ink.opacity(0.22))
@@ -288,16 +311,16 @@ struct PlayerElementView: View {
                 .frame(maxHeight: .infinity)
                 .contentShape(Rectangle())
                 .onTapGesture { point in
-                    guard music.songDuration > 0, music.songDuration.isFinite else { return }
-                    music.seek(to: music.songDuration * (point.x / max(1, geo.size.width)))
+                    guard data.duration > 0, data.duration.isFinite else { return }
+                    actions.seekTo(data.duration * (point.x / max(1, geo.size.width)))
                 }
             }
         }
     }
 
     private func timeLabel(_ format: @escaping (TimeInterval) -> String) -> some View {
-        TimelineView(.periodic(from: .now, by: music.isPlaying ? 0.5 : 60)) { context in
-            Text(format(music.estimatedPlaybackPosition(at: context.date)))
+        TimelineView(.periodic(from: .now, by: data.isPlaying ? 0.5 : 60)) { context in
+            Text(format(data.position(context.date)))
                 .font(.system(size: 10 * style.textScale, weight: .medium).monospacedDigit())
                 .foregroundStyle(style.subtleInk)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -308,11 +331,11 @@ struct PlayerElementView: View {
         Button {
             showingRemaining.toggle()
         } label: {
-            TimelineView(.periodic(from: .now, by: music.isPlaying ? 0.5 : 60)) { context in
-                let position = music.estimatedPlaybackPosition(at: context.date)
+            TimelineView(.periodic(from: .now, by: data.isPlaying ? 0.5 : 60)) { context in
+                let position = data.position(context.date)
                 Text(
                     showingRemaining
-                        ? "-" + Self.timestamp(max(0, music.songDuration - position))
+                        ? "-" + Self.timestamp(max(0, data.duration - position))
                         : Self.timestamp(position)
                 )
                 .font(.system(size: 10 * style.textScale, weight: .medium).monospacedDigit())
@@ -343,43 +366,12 @@ struct PlayerElementView: View {
         // the real-time variant acquires the CoreAudio process tap, which is
         // reference-counted and must not be held by a surface nobody is looking
         // at. That single mistake was worth 12x Anchor's idle CPU.
-        AudioVisualizerView(isPlaying: .constant(music.isPlaying))
+        AudioVisualizerView(isPlaying: .constant(data.isPlaying))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    /// The tonearm, ported from `VinylWidgetView`. It lives here rather than in
-    /// `VinylRecordView` because that view is CALayer-based and deliberately
-    /// rotates everything it owns — an arm inside it would spin with the record.
-    private func tonearm(side: CGFloat) -> some View {
-        let pivot = side * 0.16
-        let armLength = side * 0.50
-        return ZStack(alignment: .top) {
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [.white.opacity(0.95), Color(white: 0.62)],
-                        center: .init(x: 0.35, y: 0.3), startRadius: 0, endRadius: pivot * 0.7))
-                .frame(width: pivot, height: pivot)
-                .shadow(color: .black.opacity(0.25), radius: 3, y: 1)
-            VStack(spacing: 0) {
-                Capsule()
-                    .fill(Color(white: 0.28))
-                    .frame(width: max(2.5, side * 0.019), height: armLength)
-                RoundedRectangle(cornerRadius: 2, style: .continuous)
-                    .fill(Color(white: 0.22))
-                    .frame(width: side * 0.07, height: side * 0.072)
-            }
-            .offset(y: pivot * 0.45)
-            .rotationEffect(.degrees(music.isPlaying ? 32 : 12), anchor: .top)
-            .animation(.spring(response: 0.75, dampingFraction: 0.82), value: music.isPlaying)
-        }
-        .frame(width: pivot, alignment: .top)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-        .allowsHitTesting(false)
-    }
-
     @ViewBuilder private var appIcon: some View {
-        if let bundleID = music.bundleIdentifier, let icon = AppIconAsNSImage(for: bundleID) {
+        if let bundleID = data.bundleIdentifier, let icon = AppIconAsNSImage(for: bundleID) {
             Image(nsImage: icon).resizable().aspectRatio(contentMode: .fit)
         } else {
             Color.clear
@@ -387,7 +379,7 @@ struct PlayerElementView: View {
     }
 
     @ViewBuilder private var explicitBadge: some View {
-        if music.isCurrentTrackExplicit {
+        if data.isExplicit {
             Image(systemName: "e.square.fill")
                 .font(.system(size: 10 * style.textScale))
                 .foregroundStyle(style.subtleInk)
@@ -409,7 +401,12 @@ struct PlayerElementView: View {
 }
 
 /// Type-erased shape so `contentShape` can pick between a circle and a rect.
-private struct AnyShape: Shape {
+///
+/// `@unchecked Sendable`: the stored closure captures only the shape it was
+/// built from, and every shape used here is a value type — but a closure cannot
+/// carry that proof. The alternative is an enum of every shape in use, which is
+/// worse for no gain.
+struct AnyShape: Shape, @unchecked Sendable {
     private let make: (CGRect) -> Path
     init<S: Shape>(_ shape: S) { make = { shape.path(in: $0) } }
     func path(in rect: CGRect) -> Path { make(rect) }

@@ -32,11 +32,12 @@ struct VinylPodApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
 
     var body: some Scene {
-        // No WindowGroup: VinylPod is a menu-bar app whose surfaces are all
-        // borderless panels. A Settings scene gives ⌘, for free.
-        Settings {
-            SettingsRootView()
-        }
+        // No WindowGroup and no Settings scene: VinylPod is LSUIElement, so
+        // there is no key window for `showSettingsWindow:` to reach and the
+        // action silently found no responder. `SettingsWindowController` owns
+        // an ordinary NSWindow instead. This empty scene exists only because
+        // `App` requires one.
+        Settings { EmptyView() }
     }
 }
 
@@ -94,10 +95,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private static let nowPlayingTag = 1
 
     @objc private func openSettings() {
-        NSApp.activate(ignoringOtherApps: true)
-        if #available(macOS 14.0, *) {
-            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-        }
+        // AppKit sends menu actions on the main thread.
+        MainActor.assumeIsolated { SettingsWindowController.shared.show() }
     }
 }
 
@@ -123,15 +122,15 @@ extension AppDelegate: NSMenuDelegate {
     }
 }
 
-/// Placeholder until the layout editor lands in Phase 2.
+/// The settings window.
 struct SettingsRootView: View {
     var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "opticaldisc.fill").font(.system(size: 40))
-            Text("VinylPod").font(.title2.weight(.semibold))
-            Text("Layout editor arrives in Phase 2.")
-                .foregroundStyle(.secondary)
+        TabView {
+            LayoutEditorView()
+                .tabItem { Label("Layout", systemImage: "square.grid.3x2") }
+            PlayerSettingsView()
+                .tabItem { Label("Player", systemImage: "opticaldisc") }
         }
-        .frame(width: 420, height: 220)
+        .frame(minWidth: 760, minHeight: 600)
     }
 }
