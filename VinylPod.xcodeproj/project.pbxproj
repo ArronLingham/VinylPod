@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		7E00000000000000000000A1 /* Defaults in Frameworks */ = {isa = PBXBuildFile; productRef = 7E00000000000000000000B1 /* Defaults */; };
 		7E00000000000000000000A2 /* SkyLightWindow in Frameworks */ = {isa = PBXBuildFile; productRef = 7E00000000000000000000B2 /* SkyLightWindow */; };
-		7E00000000000000000000A3 /* LottieUI in Frameworks */ = {isa = PBXBuildFile; productRef = 7E00000000000000000000B3 /* LottieUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,7 +27,6 @@
 			files = (
 				7E00000000000000000000A1 /* Defaults in Frameworks */,
 				7E00000000000000000000A2 /* SkyLightWindow in Frameworks */,
-				7E00000000000000000000A3 /* LottieUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,7 +72,6 @@
 			packageProductDependencies = (
 				7E00000000000000000000B1 /* Defaults */,
 				7E00000000000000000000B2 /* SkyLightWindow */,
-				7E00000000000000000000B3 /* LottieUI */,
 			);
 			productName = VinylPod;
 			productReference = 7E00000000000000000000C1 /* VinylPod.app */;
@@ -107,7 +104,6 @@
 			packageReferences = (
 				7E0000000000000000000161 /* XCRemoteSwiftPackageReference "Defaults" */,
 				7E0000000000000000000162 /* XCRemoteSwiftPackageReference "SkyLightWindow" */,
-				7E0000000000000000000163 /* XCRemoteSwiftPackageReference "LottieUI" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 7E00000000000000000000F2 /* Products */;
@@ -314,14 +310,6 @@
 				kind = branch;
 			};
 		};
-		7E0000000000000000000163 /* XCRemoteSwiftPackageReference "LottieUI" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/jasudev/LottieUI.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -334,11 +322,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 7E0000000000000000000162 /* XCRemoteSwiftPackageReference "SkyLightWindow" */;
 			productName = SkyLightWindow;
-		};
-		7E00000000000000000000B3 /* LottieUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 7E0000000000000000000163 /* XCRemoteSwiftPackageReference "LottieUI" */;
-			productName = LottieUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

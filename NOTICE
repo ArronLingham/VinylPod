@@ -44,6 +44,5 @@ VinylPod uses the following third-party packages, each under its own licence:
 
     Defaults          MIT     https://github.com/sindresorhus/Defaults
     SkyLightWindow    MIT     https://github.com/Lakr233/SkyLightWindow
-    LottieUI          MIT     https://github.com/jasudev/LottieUI
 
 The C++ spectrum processor links Accelerate (vDSP) from the macOS SDK.
