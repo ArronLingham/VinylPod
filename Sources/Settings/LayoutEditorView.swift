@@ -80,6 +80,16 @@ struct LayoutEditorView: View {
                 .toggleStyle(.switch)
                 .controlSize(.small)
                 .help("Preview what appears when the pointer is over this surface.")
+
+            // Always here, not only when the inspector is empty. It used to sit
+            // in the no-selection placeholder, and nothing could clear a
+            // selection — so one click on an element put Reset permanently out
+            // of reach.
+            Button("Reset") {
+                layouts[surface] = PlayerLayouts.defaults[surface]
+                selection = nil
+            }
+            .help("Restore this surface to the layout VinylPod ships with.")
         }
         .padding(12)
     }
@@ -95,6 +105,24 @@ struct LayoutEditorView: View {
         case .lockFull: return CGSize(width: 640, height: 400)
         case .launcher: return CGSize(width: 220, height: 0)
         }
+    }
+
+    /// The name the drag gesture reports coordinates in.
+    ///
+    /// `coordinateSpace: .local` was wrong and looked almost right: `.local` on
+    /// a drag attached to the *handle* is the handle's own bounds, so dropping
+    /// in the middle of a 40pt button reported (20, 20) and every drag landed
+    /// near the origin — about one cell short, which reads as an off-by-one
+    /// rather than as the wrong coordinate system.
+    private static let surfaceSpace = "vinylpod.surface"
+
+    /// Every placement, laid out as if all of them were visible.
+    private var hitTestLayout: GridSolver.ResolvedLayout {
+        let size = previewSize
+        return GridSolver.solve(
+            layout: layout,
+            available: CGSize(width: size.width, height: CGFloat.infinity),
+            hovering: true)
     }
 
     private var resolvedPreview: GridSolver.ResolvedLayout {
@@ -120,6 +148,8 @@ struct LayoutEditorView: View {
 
         return ZStack(alignment: .topLeading) {
             backdrop
+                .contentShape(Rectangle())
+                .onTapGesture { selection = nil }
             PlayerSurfaceView(
                 layout: layout,
                 style: .forSurface(
@@ -131,8 +161,14 @@ struct LayoutEditorView: View {
             .allowsHitTesting(false)
 
             gridOverlay(width: size.width, height: height, resolved: resolved)
-            dragLayer(resolved: resolved, width: size.width, height: height)
+            // Hit-testing uses a solve of EVERY placement, not the one that was
+            // drawn. Two reasons: the drawn solve compacts and renumbers rows
+            // over only the *visible* set, so writing its row index back into
+            // storage silently moves elements when anything is hover-only; and
+            // a hover-only element you cannot see is one you cannot drag.
+            dragLayer(resolved: hitTestLayout, width: size.width)
         }
+        .coordinateSpace(name: Self.surfaceSpace)
         .frame(width: size.width, height: height)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(
@@ -189,23 +225,28 @@ struct LayoutEditorView: View {
     /// from, so what you grab is always what you see — hit-testing against a
     /// second, independently computed layout is how a drag ends up one row off.
     private func dragLayer(
-        resolved: GridSolver.ResolvedLayout, width: CGFloat, height: CGFloat
+        resolved: GridSolver.ResolvedLayout, width: CGFloat
     ) -> some View {
         ForEach(resolved.elements, id: \.placement.id) { element in
             let isSelected = selection == element.placement.id
+            let isHidden = element.placement.visibility == .onHover && !hoverPreview
             RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .fill(Color.accentColor.opacity(isSelected ? 0.28 : 0.001))
+                .fill(
+                    Color.accentColor.opacity(
+                        isSelected ? 0.28 : (isHidden ? 0.10 : 0.001)))
                 .overlay(
                     RoundedRectangle(cornerRadius: 4, style: .continuous)
                         .strokeBorder(
-                            Color.accentColor.opacity(isSelected ? 0.9 : 0),
-                            lineWidth: 1.5)
+                            Color.accentColor.opacity(
+                                isSelected ? 0.9 : (isHidden ? 0.45 : 0)),
+                            style: StrokeStyle(
+                                lineWidth: 1.5, dash: isHidden && !isSelected ? [3, 3] : []))
                 )
                 .frame(width: element.frame.width, height: element.frame.height)
                 .offset(x: element.frame.minX, y: element.frame.minY)
                 .onTapGesture { selection = element.placement.id }
                 .gesture(
-                    DragGesture(minimumDistance: 4, coordinateSpace: .local)
+                    DragGesture(minimumDistance: 4, coordinateSpace: .named(Self.surfaceSpace))
                         .onChanged { _ in
                             selection = element.placement.id
                             dragging = element.placement.id
@@ -237,9 +278,25 @@ struct LayoutEditorView: View {
         else { return }
 
         var moved = layout.placements[index]
-        moved.col = min(cell.col, layout.geometry.columns - moved.colSpan)
-        moved.row = cell.row
+        // `resolved` here is the full-set solve, whose rows are the stored rows
+        // renumbered contiguously — and `normalisingRows` keeps storage in that
+        // shape after every edit, so the two agree and `cell.row` is usable
+        // directly. Against the *drawn* solve it would not be.
+        moved.col = max(0, min(cell.col, layout.geometry.columns - moved.colSpan))
+        moved.row = max(0, cell.row)
         guard GridSolver.canPlace(moved, in: layout, ignoring: id) else { return }
+
+        // An overlay with no base beneath it is dropped by the solver as an
+        // orphan, so accepting the move would make the element vanish with no
+        // way to get it back — the drag layer can only show what the solver
+        // returns. Refusing the drop leaves it where it was.
+        if moved.layer == .overlay {
+            let hasBase = layout.placements.contains {
+                $0.id != id && $0.layer == .base && $0.row == moved.row
+                    && $0.columns.overlaps(moved.columns)
+            }
+            guard hasBase else { return }
+        }
 
         var updated = layout
         updated.placements[index] = moved
@@ -404,11 +461,6 @@ struct LayoutEditorView: View {
                 Text("Drag it to move it. Add more from the row below.")
                     .font(.caption).foregroundStyle(.tertiary)
                     .multilineTextAlignment(.center)
-                Divider().padding(.vertical, 6)
-                Button("Reset this surface") {
-                    layout = PlayerLayouts.defaults[surface]
-                    selection = nil
-                }
             }
             .padding(20)
             .frame(maxHeight: .infinity)

@@ -46,7 +46,8 @@ struct PlayerSurfaceView: View {
                 // order — the renderer needs no z-index of its own.
                 ForEach(resolved.elements, id: \.placement.id) { element in
                     PlayerElementView(
-                        placement: element.placement, style: style, data: data, actions: actions
+                        placement: element.placement, style: style, data: data,
+                        actions: actions, isLive: snapshot == nil
                     )
                     .frame(width: element.frame.width, height: element.frame.height)
                     .offset(x: element.frame.minX, y: element.frame.minY)
@@ -110,6 +111,7 @@ struct PlayerElementView: View {
     let style: SurfaceStyle
     let data: PlayerSnapshot
     let actions: PlayerActions
+    var isLive: Bool = true
 
     @State private var showingRemaining = false
 
@@ -141,15 +143,15 @@ struct PlayerElementView: View {
         case .trackTimeToggle: trackTimeToggle
 
         case .lyrics: lyrics
-        case .outputDevice: OutputDeviceElement(style: style)
-        case .airPlay: AirPlayElement(style: style)
-        case .volumeSlider: VolumeElement(style: style)
+        case .outputDevice: OutputDeviceElement(style: style, isLive: isLive)
+        case .airPlay: AirPlayElement(style: style, isLive: isLive)
+        case .volumeSlider: VolumeElement(style: style, isLive: isLive)
         case .visualizer: visualizer
 
         case .appIcon: appIcon
         case .explicitBadge: explicitBadge
         case .clock: clock
-        case .timer: PlayerTimerElement(style: style)
+        case .timer: PlayerTimerElement(style: style, isLive: isLive)
         }
     }
 

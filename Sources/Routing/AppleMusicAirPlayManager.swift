@@ -99,6 +99,15 @@ final class AppleMusicAirPlayManager: ObservableObject {
         guard let result = try? await AppleScriptHelper.execute(script) else { return }
 
         var fetched: [AirPlayDevice] = []
+        // `1...0` traps. The script returns an empty list both on error (it has
+        // `on error return {}`) and when the library simply has no AirPlay
+        // endpoints, which is the ordinary case on most Macs -- so this was a
+        // hard crash on the common path the moment an AirPlay element appeared
+        // on a surface.
+        guard result.numberOfItems > 0 else {
+            devices = []
+            return
+        }
         for i in 1...result.numberOfItems {
             guard let item = result.atIndex(i) else { continue }
             let name = item.atIndex(1)?.stringValue ?? "Unknown"

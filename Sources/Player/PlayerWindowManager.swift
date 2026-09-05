@@ -50,7 +50,12 @@ final class PlayerWindowManager: ObservableObject {
             .sink { [weak self] _ in Task { @MainActor in self?.applyLevel() } }
             .store(in: &cancellables)
         Defaults.publisher(.playerLayouts, options: [])
-            .sink { [weak self] _ in Task { @MainActor in self?.relayout(animated: true) } }
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    self?.cachedLayout = nil
+                    self?.relayout(animated: true)
+                }
+            }
             .store(in: &cancellables)
 
         // The widget is torn down entirely while the display sleeps rather than
@@ -123,7 +128,19 @@ final class PlayerWindowManager: ObservableObject {
 
     // MARK: Size
 
-    private var layout: SurfaceLayout { Defaults[.playerLayouts].desktop }
+    /// Cached, because `Defaults[.playerLayouts]` decodes JSON for **all four**
+    /// surfaces on every read, and a resize drag reads it several times per
+    /// mouse event — twice in `relayout`, once in `isDeadSpace`, once more in
+    /// the view body. Invalidated by the same publisher that triggers a
+    /// relayout, so it cannot go stale.
+    private var cachedLayout: SurfaceLayout?
+
+    private var layout: SurfaceLayout {
+        if let cachedLayout { return cachedLayout }
+        let resolved = Defaults[.playerLayouts].desktop
+        cachedLayout = resolved
+        return resolved
+    }
 
     /// The height the window should be.
     ///
@@ -153,11 +170,10 @@ final class PlayerWindowManager: ObservableObject {
     /// pointer feels like the window resisting.
     private func relayout(animated: Bool) {
         guard let panel else { return }
+        let height = targetHeight(hovering: isHovering)
         let target = NSRect(
-            x: panel.frame.minX,
-            y: panel.frame.maxY - targetHeight(hovering: isHovering),
-            width: width,
-            height: targetHeight(hovering: isHovering))
+            x: panel.frame.minX, y: panel.frame.maxY - height,
+            width: width, height: height)
         // Anchored at the TOP edge: a widget that grows downward stays put where
         // the user left it, whereas growing from the bottom-left origin makes
         // the whole card jump up the screen on hover.

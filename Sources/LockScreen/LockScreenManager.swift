@@ -57,7 +57,7 @@ final class LockScreenManager: ObservableObject {
         // Reflect the state at launch: starting up while already locked is
         // rare but not impossible, and getting it wrong means the panel never
         // appears for that session.
-        if Self.sessionIsLocked() { screenLocked() }
+        if Self.sessionIsLocked() == true { screenLocked() }
     }
 
     // MARK: Handlers
@@ -66,7 +66,12 @@ final class LockScreenManager: ObservableObject {
         guard !isLocked else { return }
         isLocked = true
         LockScreenPanelManager.shared.show()
-        startPolling()
+        // Only poll if there is something on screen to take down. The poll
+        // exists to hide the panel early when the unlock notification is late;
+        // with no panel there is nothing to hide, and waking twice a second for
+        // a feature that is off by default is exactly the trap this project
+        // keeps recording.
+        if Defaults[.enableLockScreenWidget] { startPolling() }
     }
 
     @objc private func screenUnlocked() {
@@ -79,9 +84,15 @@ final class LockScreenManager: ObservableObject {
     // MARK: Polling fallback
 
     /// The canonical state, which is not a notification and cannot be late.
-    private static func sessionIsLocked() -> Bool {
-        guard let session = CGSessionCopyCurrentDictionary() as? [String: Any] else { return false }
-        return session["CGSSessionScreenIsLocked"] as? Bool ?? false
+    ///
+    /// Returns `nil` when it cannot tell, and the caller treats that as "no
+    /// new information". Collapsing unknown to `false` meant one transient
+    /// CGSession failure read as an unlock and tore the panel down in the
+    /// middle of a locked session, with nothing to put it back until the next
+    /// real lock.
+    private static func sessionIsLocked() -> Bool? {
+        guard let session = CGSessionCopyCurrentDictionary() as? [String: Any] else { return nil }
+        return session["CGSSessionScreenIsLocked"] as? Bool
     }
 
     /// Runs **only while locked**, which is the whole reason it is acceptable
@@ -99,7 +110,7 @@ final class LockScreenManager: ObservableObject {
                 guard !Task.isCancelled else { return }
                 await MainActor.run {
                     guard let self, self.isLocked else { return }
-                    if !Self.sessionIsLocked() { self.screenUnlocked() }
+                    if Self.sessionIsLocked() == false { self.screenUnlocked() }
                 }
             }
         }

@@ -55,7 +55,10 @@ struct LauncherPlayerWidget: View {
         }
     }
 
-    var size: Size = .regular
+    /// Defaults to the stored preference rather than a hardcoded `.regular`.
+    /// It was the latter while `launcherWidgetSize` existed and was documented
+    /// as being read — a dead key whose own comment claimed otherwise.
+    var size: Size = Defaults[.launcherWidgetSize]
     /// Tapping the card. At integration this opens the desktop player; it is
     /// injected so the widget has no opinion about who hosts it.
     var onOpen: () -> Void = {}

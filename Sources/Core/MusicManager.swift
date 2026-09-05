@@ -573,7 +573,14 @@ class MusicManager: ObservableObject {
     // MARK: - Initialization
     init() {
         // Listen for changes to the default controller preference
-        NotificationCenter.default.publisher(for: Notification.Name.mediaControllerChanged)
+        // Was `NotificationCenter.publisher(for: .mediaControllerChanged)`.
+        // Nothing in VinylPod posts that name — in Anchor the poster lived in
+        // the settings pane, which was not extracted — so the source picker
+        // changed the stored value and nothing acted on it. Observing the key
+        // directly cannot come apart from the control that writes it.
+        Defaults.publisher(.mediaController).map { _ in () }
+            .eraseToAnyPublisher()
+            .map { Notification(name: .mediaControllerChanged) }
             .sink { [weak self] _ in
                 self?.isPearDesktopAutoSwitched = false
                 self?.setActiveControllerBasedOnPreference()

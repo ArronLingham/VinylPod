@@ -33,8 +33,8 @@ final class LockScreenPanelManager: ObservableObject {
     /// Whether the small widget has been expanded into the full-screen player.
     @Published private(set) var isImmersive = false
 
-    private var window: NSWindow?
-    private var hasDelegatedToSkyLight = false
+    private var window: LockPanel?
+    private weak var delegatedWindow: NSWindow?
     private var isPreviewing = false
 
     private init() {}
@@ -72,7 +72,7 @@ final class LockScreenPanelManager: ObservableObject {
         guard let screen = NSScreen.main else { return }
 
         isImmersive = false
-        let panel = existingOrNewWindow()
+        let panel = existingOrNewWindow(on: screen)
         panel.setFrame(frame(for: screen, immersive: false), display: true)
 
         // `CGShieldingWindowLevel()` alone is NOT enough — it puts the window
@@ -82,16 +82,25 @@ final class LockScreenPanelManager: ObservableObject {
         //
         // Delegate ONCE. Anchor's note is explicit that repeating it, or
         // closing the window rather than ordering it out, crashes SkyLight.
-        if !hasDelegatedToSkyLight {
+        // Delegate once per window, and record it against the window rather
+        // than as a bare flag — a flag set to true before the call could be
+        // wrong about a window that was never actually delegated, and there is
+        // no way to notice because the failure is "nothing appears when you
+        // lock the screen", hours later.
+        if delegatedWindow !== panel {
             SkyLightOperator.shared.delegateWindow(panel)
-            hasDelegatedToSkyLight = true
+            delegatedWindow = panel
         }
         panel.orderFrontRegardless()
     }
 
     func hide() {
-        // Ordered out, never closed — see above.
+        // Ordered out, never closed — see above. The hosting view is released
+        // with it: an `NSHostingView` left alive behind an ordered-out window
+        // keeps its TimelineViews scheduled and keeps solving the layout, which
+        // is the "a loop that no-ops is still a loop" trap in window form.
         window?.orderOut(nil)
+        window?.contentView = NSView()
         isImmersive = false
     }
 
@@ -108,14 +117,28 @@ final class LockScreenPanelManager: ObservableObject {
         }
     }
 
-    private func existingOrNewWindow() -> NSWindow {
-        if let window { return window }
-        let host = NSHostingView(rootView: LockScreenRootView(manager: self))
-        let created = NSWindow(
-            contentRect: .zero,
+    private func existingOrNewWindow(on screen: NSScreen) -> NSPanel {
+        if let window {
+            // The content view is torn down on hide, so it has to come back.
+            if !(window.contentView is NSHostingView<LockScreenRootView>) {
+                window.contentView = NSHostingView(rootView: LockScreenRootView(manager: self))
+            }
+            return window
+        }
+        // An **NSPanel**, not an NSWindow. `.nonactivatingPanel` is a panel-only
+        // style bit: NSWindow accepts it in the mask and ignores it, so the
+        // window would try to activate the app on every click and the transport
+        // buttons on the lock surface would not reliably get their events.
+        //
+        // Content is passed through `contentRect` sizing and assigned before the
+        // window is ever ordered in, for the reason `PlayerPanel` documents: a
+        // borderless window given content later can end up with no backing
+        // store and never reach the window server while reporting isVisible.
+        let created = LockPanel(
+            contentRect: frame(for: screen, immersive: false),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered, defer: false)
-        created.contentView = host
+        created.contentView = NSHostingView(rootView: LockScreenRootView(manager: self))
         created.isReleasedWhenClosed = false
         created.isOpaque = false
         created.backgroundColor = .clear
@@ -123,6 +146,7 @@ final class LockScreenPanelManager: ObservableObject {
         created.isMovable = false
         created.level = NSWindow.Level(rawValue: Int(CGShieldingWindowLevel()))
         created.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary]
+        created.onEscape = { [weak self] in self?.setImmersive(false) }
         window = created
         return created
     }
@@ -138,7 +162,10 @@ final class LockScreenPanelManager: ObservableObject {
         let width = Defaults[.lockWidgetWidth]
         let height = GridSolver.intrinsicHeight(
             layout: Defaults[.playerLayouts].lockWidget, width: width)
-        let offset = Defaults[.lockWidgetVerticalOffset]
+        // Clamped, which the key's comment claimed and the code did not do.
+        // An unbounded offset puts the panel off the top or bottom of the
+        // screen, and there is no way to drag a lock-screen panel back.
+        let offset = min(max(Defaults[.lockWidgetVerticalOffset], -240), 240)
         return NSRect(
             x: full.midX - width / 2,
             y: full.midY + full.height * 0.06 - height / 2 + offset,
@@ -163,6 +190,20 @@ private struct LockScreenRootView: View {
         }
     }
 
+    /// How much of the widget's leading edge is artwork.
+    ///
+    /// Derived from the layout rather than guessed, so it stays right when the
+    /// user moves the artwork or changes its span.
+    private var artworkHitWidth: CGFloat {
+        let layout = layouts.lockWidget
+        guard let art = layout.placements.first(where: { $0.element == .artwork }) else { return 0 }
+        let width = Defaults[.lockWidgetWidth]
+        let cell = GridSolver.cellWidth(for: layout.geometry, totalWidth: width)
+        return layout.geometry.padding
+            + GridSolver.resolvedWidth(
+                span: art.colSpan, cellWidth: cell, gutter: layout.geometry.gutter)
+    }
+
     // MARK: Small widget
 
     private var widget: some View {
@@ -173,7 +214,15 @@ private struct LockScreenRootView: View {
         )
         .background(glass)
         .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .onTapGesture(count: 2) { manager.setImmersive(true) }
+        // Only the artwork expands, which is what this always claimed and did
+        // not do: the gesture was on the whole widget, so double-clicking a
+        // transport button threw you into a full-screen overlay.
+        .overlay(alignment: .leading) {
+            Color.clear
+                .frame(width: artworkHitWidth)
+                .contentShape(Rectangle())
+                .onTapGesture(count: 2) { manager.setImmersive(true) }
+        }
     }
 
     /// Liquid glass where the OS has it, a frosted material where it does not.
@@ -202,7 +251,24 @@ private struct LockScreenRootView: View {
                                    scale: layouts.lockFull.geometry.contentScale))
         }
         .ignoresSafeArea()
-        .onTapGesture(count: 2) { manager.setImmersive(false) }
+        // Deliberately a SINGLE tap, plus Escape (see `LockPanel`), plus the
+        // button. This covers the whole display above loginwindow's shield, so
+        // needing to discover a double-click to escape it is not acceptable —
+        // getting out has to be easier than getting in.
+        .onTapGesture { manager.setImmersive(false) }
+        .overlay(alignment: .topLeading) {
+            Button {
+                manager.setImmersive(false)
+            } label: {
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.75))
+                    .padding(10)
+                    .background(Circle().fill(.black.opacity(0.35)))
+            }
+            .buttonStyle(.plain)
+            .padding(24)
+        }
     }
 
     /// Two choices, which is what the spec asked for: the album cover itself
@@ -239,4 +305,17 @@ public enum LockFullBackground: String, Codable, CaseIterable, Defaults.Serializ
         case .albumColour: return String(localized: "Album cover colour")
         }
     }
+}
+
+
+/// The lock-screen panel.
+///
+/// Exists for two reasons: `.nonactivatingPanel` is honoured only by `NSPanel`,
+/// and a full-screen overlay above the login shield needs a keyboard escape.
+final class LockPanel: NSPanel {
+    var onEscape: (() -> Void)?
+
+    override var canBecomeKey: Bool { true }
+
+    override func cancelOperation(_ sender: Any?) { onEscape?() }
 }

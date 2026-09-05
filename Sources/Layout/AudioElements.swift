@@ -28,9 +28,15 @@ import SwiftUI
 // because each needs its own observation and `PlayerElementView` is a value
 // type recreated on every solve.
 
+// `isLive` is false in the settings preview. Without it, arranging a layout
+// ran real system work: the AirPlay element drove AppleScript against Music,
+// and the output element made HAL round-trips — every time the preview
+// re-rendered, which is on every drag frame.
+
 /// Picks the Mac's output device.
 struct OutputDeviceElement: View {
     let style: SurfaceStyle
+    var isLive: Bool = true
     @ObservedObject private var routes = AudioRouteManager.shared
 
     var body: some View {
@@ -52,10 +58,11 @@ struct OutputDeviceElement: View {
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
-        // Refreshed when the menu is built rather than on a timer. The manager
-        // also observes `systemAudioRouteDidChange`, so this only covers the
-        // case where the element appears after a change it missed.
-        .onAppear { routes.refreshDevices() }
+        .disabled(!isLive)
+        // Refreshed when the element appears rather than on a timer. The manager
+        // also listens to CoreAudio directly, so this only covers a change it
+        // missed before the element existed.
+        .onAppear { if isLive { routes.refreshDevices() } }
     }
 }
 
@@ -66,6 +73,7 @@ struct OutputDeviceElement: View {
 /// Music is the source. It is AppleScript-driven, hence the async refresh.
 struct AirPlayElement: View {
     let style: SurfaceStyle
+    var isLive: Bool = true
     @ObservedObject private var airplay = AppleMusicAirPlayManager.shared
 
     var body: some View {
@@ -90,14 +98,20 @@ struct AirPlayElement: View {
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
-        .task { await airplay.refreshDevices() }
+        .disabled(!isLive)
+        .task { if isLive { await airplay.refreshDevices() } }
     }
 }
 
 /// System output volume.
 struct VolumeElement: View {
     let style: SurfaceStyle
-    @State private var volume: Float = SystemVolume.current()
+    var isLive: Bool = true
+    // Not `= SystemVolume.current()`. A `@State` initialiser runs every time
+    // SwiftUI recreates the struct, so that made two blocking CoreAudio HAL
+    // round-trips per render and discarded all but the first. Read in
+    // `onAppear` instead, where it happens once.
+    @State private var volume: Float = 0
 
     var body: some View {
         HStack(spacing: 6) {
@@ -114,11 +128,12 @@ struct VolumeElement: View {
             )
             .controlSize(.mini)
             .tint(style.ink.opacity(0.85))
+            .disabled(!isLive)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         // Read on appear, not polled. The slider is the source of truth while
         // the user is dragging it, and a poll would fight them for the handle.
-        .onAppear { volume = SystemVolume.current() }
+        .onAppear { if isLive { volume = SystemVolume.current() } else { volume = 0.6 } }
     }
 }
 
@@ -173,13 +188,14 @@ enum SystemVolume {
 /// surface that is showing nothing playing without leaving a hole.
 struct PlayerTimerElement: View {
     let style: SurfaceStyle
+    var isLive: Bool = true
     @ObservedObject private var timer = PlayerTimer.shared
 
     var body: some View {
         Button {
-            timer.tap()
+            if isLive { timer.tap() }
         } label: {
-            Text(timer.display)
+            Text(isLive ? timer.display : "05:00")
                 .font(.system(size: 13 * style.textScale, weight: .medium).monospacedDigit())
                 .foregroundStyle(timer.isRunning ? style.accent : style.ink)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

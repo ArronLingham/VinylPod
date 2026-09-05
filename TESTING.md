@@ -185,10 +185,59 @@ grep -rhoE '^import (MusicKit|EventKit|Speech|AVFoundation|Contacts|Photos|CoreL
 Debug build does not inherit them, so anything gated on a permission can only be
 tested in a signed build.
 
+## Findings from the adversarial review that are NOT fixed
+
+A four-agent review ran against the finished code. **Its verification pass never
+ran** — all 46 verifier agents died on a spend limit — so every finding below is
+a *claim* that was read and judged by hand, not one that survived an independent
+refutation. Treat them as leads.
+
+Fixed after checking the code: the AirPlay `1...0` range trap (a hard crash on
+the common path), the drag reporting coordinates in the handle's own space, the
+drag writing a compacted row index into storage, an overlay dragged off its base
+being silently destroyed, Reset becoming unreachable, `.mediaControllerChanged`
+and `.systemAudioRouteDidChange` being observed but never posted, `enableLyrics`
+and `lockWidgetVerticalOffset` having no UI, `launcherWidgetSize` being dead,
+the lock window being an `NSWindow` carrying a panel-only style bit, SkyLight
+delegation recording success it had not verified, the immersive overlay having
+only a double-click as its exit, the expand gesture covering the whole widget,
+the lock poll running with the feature off, the audio elements doing live system
+work inside the settings preview, `setArtwork` re-rasterising per render,
+`VolumeElement` making HAL calls in a `@State` initialiser, and the window
+manager decoding all four layouts from JSON several times per resize event.
+
+**Still open, in rough priority:**
+
+- **`GridSolver.solve` runs inside `body`, under a `GeometryReader`.** It
+  allocates on the order of a hundred small collections per call. Idle cost is
+  measured at 0.01% so this is not urgent, but it is the hot path during a
+  resize drag and the obvious next optimisation is memoising on
+  (layout, size, hovering).
+- **`PlayerSurfaceView` observes all of `MusicManager`'s published properties
+  even when driven by a frozen snapshot**, so the settings preview re-renders on
+  every playback change for nothing.
+- **`TimelineView(.periodic(from: .now, …))` re-anchors its schedule on every
+  render.** Should use a fixed anchor date.
+- **`PlayerTimer` keeps ticking after the last surface carrying the element is
+  gone**, and does not stop for display sleep.
+- **No display-topology handling on the lock screen.** `NSScreen.main` while
+  locked may not be the screen you expect, and a display change while locked is
+  not handled at all. Item 6 of MANUAL-TESTS.md is the check.
+- **The desktop player does not consult `SystemActivityGate` for Low Power
+  Mode** in a way anyone has verified; the teardown/restore path is written but
+  unexercised.
+
 ## Measuring
 
-`scripts/measure.sh VinylPod 180 "<label>"`. **Not yet run** — there is no
-figure for VinylPod in this repo, and one should not be quoted until there is.
+| Build | mean | median | p90 | max | RSS |
+|---|---|---|---|---|---|
+| Release, idle, 19 min uptime, shipped defaults | **0.01%** | 0.00% | 0.00% | 0.48% | **12.5 MB** |
+
+87 samples over 180 s. RSS settled 72 → 28 → 12.5 MB over roughly 20 minutes;
+the reading at 5 minutes would have been about six times too high.
+
+That is below Anchor's best recorded row (16 MB) and its best idle CPU (0.03%),
+which is what you would expect from an app with one window and no notch.
 
 Let it settle **12+ minutes** before believing any RSS number, check the sample
 count, and never sample during a build or while doing anything else on the

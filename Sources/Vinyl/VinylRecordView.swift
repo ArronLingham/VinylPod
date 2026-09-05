@@ -181,7 +181,18 @@ final class VinylRecordView: NSView {
     /// `contentsGravity` or clip to the layer's corner radius — a square album
     /// cover then sits on top of a round record, which gives the whole illusion
     /// away. A `CGImage` behaves.
+    /// The image this layer is currently showing.
+    ///
+    /// `updateNSView` runs on every SwiftUI update, and without this guard each
+    /// one re-rasterised the cover through `cgImage(forProposedRect:)` and
+    /// re-uploaded it to the render server — for an image that changes once a
+    /// track. Identity is the right test: `MusicManager` hands out the same
+    /// `NSImage` instance until the artwork actually changes.
+    private weak var currentArtwork: NSImage?
+
     func setArtwork(_ image: NSImage?) {
+        guard image !== currentArtwork else { return }
+        currentArtwork = image
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         defer { CATransaction.commit() }

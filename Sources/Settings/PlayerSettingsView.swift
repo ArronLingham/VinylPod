@@ -34,6 +34,8 @@ struct PlayerSettingsView: View {
     @Default(.lockWidgetWidth) private var lockWidth
     @Default(.lockFullBackground) private var lockBackground
     @Default(.mediaController) private var source
+    @Default(.lockWidgetVerticalOffset) private var lockOffset
+    @Default(.enableLyrics) private var lyricsEnabled
 
     var body: some View {
         Form {
@@ -62,9 +64,20 @@ struct PlayerSettingsView: View {
                     Slider(value: $lockWidth, in: 260...620)
                     Text("\(Int(lockWidth))").monospacedDigit().frame(width: 42)
                 }
+                HStack {
+                    Text("Vertical offset")
+                    Slider(value: $lockOffset, in: -240...240)
+                    Text("\(Int(lockOffset))").monospacedDigit().frame(width: 42)
+                }
                 Picker("Full-screen background", selection: $lockBackground) {
                     ForEach(LockFullBackground.allCases, id: \.self) { Text($0.label).tag($0) }
                 }
+            }
+
+            Section("Lyrics") {
+                Toggle("Fetch lyrics", isOn: $lyricsEnabled)
+                Text("Needed by the Lyrics element. Off by default because it fetches from the network.")
+                    .font(.caption).foregroundStyle(.secondary)
             }
 
             Section("Source") {
