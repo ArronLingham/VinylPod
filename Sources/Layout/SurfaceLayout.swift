@@ -140,10 +140,47 @@ public struct GridGeometry: Codable, Hashable, Sendable {
     public var padding: CGFloat
     public var gutter: CGFloat
 
-    public init(columns: Int, padding: CGFloat = 14, gutter: CGFloat = 8) {
+    /// Multiplies BOTH font sizes and row heights.
+    ///
+    /// It has to do both. A first version scaled only the fonts, from a
+    /// per-surface constant in `SurfaceStyle`, and the full-screen lock player
+    /// rendered a 24pt title inside a 20pt row — visibly clipped. Row height
+    /// comes from `ElementMetrics`, so anything that changes how large an
+    /// element draws has to reach the metrics too, and one number is the only
+    /// way to keep them from drifting apart.
+    public var contentScale: CGFloat
+
+    /// Centre each row horizontally, and the whole arrangement vertically, in
+    /// whatever room the surface has.
+    ///
+    /// This is what makes "turn lyrics off and the album cover goes front and
+    /// centre" work. The full-screen player's default puts the artwork in the
+    /// left six columns and the lyrics in the right six; delete the lyrics
+    /// placement and the artwork is alone in its row, so centring puts it in
+    /// the middle of the screen with no second layout to maintain.
+    ///
+    /// Off for the desktop card, where the user positions things against a
+    /// frame they sized themselves and drift would be surprising.
+    public var centersContent: Bool
+
+    public init(
+        columns: Int, padding: CGFloat = 14, gutter: CGFloat = 8, contentScale: CGFloat = 1,
+        centersContent: Bool = false
+    ) {
         self.columns = columns
         self.padding = padding
         self.gutter = gutter
+        self.contentScale = contentScale
+        self.centersContent = centersContent
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        columns = try c.decode(Int.self, forKey: .columns)
+        padding = try c.decodeIfPresent(CGFloat.self, forKey: .padding) ?? 14
+        gutter = try c.decodeIfPresent(CGFloat.self, forKey: .gutter) ?? 8
+        contentScale = try c.decodeIfPresent(CGFloat.self, forKey: .contentScale) ?? 1
+        centersContent = try c.decodeIfPresent(Bool.self, forKey: .centersContent) ?? false
     }
 }
 

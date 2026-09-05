@@ -62,6 +62,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.async {
             _ = MusicManager.shared
             PlayerWindowManager.shared.start()
+            LockScreenManager.shared.start()
+            #if DEBUG
+                LockScreenPanelManager.shared.previewIfRequested()
+            #endif
         }
     }
 

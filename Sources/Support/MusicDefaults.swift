@@ -101,6 +101,16 @@ extension Defaults.Keys {
     /// simply has to fit in the resting frame.
     static let hoverGrowsWidget = Key<Bool>("hoverGrowsWidget", default: true)
 
+    /// The small lock-screen widget. Off by default: it draws over the lock
+    /// screen through a private SkyLight API, which is not something to switch
+    /// on for someone without their say-so.
+    static let enableLockScreenWidget = Key<Bool>("enableLockScreenWidget", default: false)
+    static let lockWidgetWidth = Key<Double>("lockWidgetWidth", default: 380)
+    /// Nudge it clear of the password field. Clamped where it is read.
+    static let lockWidgetVerticalOffset = Key<Double>("lockWidgetVerticalOffset", default: 0)
+    static let lockFullBackground = Key<LockFullBackground>(
+        "lockFullBackground", default: .blurredArtwork)
+
     //   the ten vinyl* / launcherShowVinylWidget keys
     //                                       retired with VinylWidgetView, which
     //                                       PlayerSurfaceView supersedes. Left in

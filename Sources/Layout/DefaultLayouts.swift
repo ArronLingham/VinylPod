@@ -298,7 +298,7 @@ extension SurfaceLayout {
     ///
     /// No progress bar or times: the source draws none.
     public static let defaultLockFull = SurfaceLayout(
-        geometry: GridGeometry(columns: 12),
+        geometry: GridGeometry(columns: 12, contentScale: 1.6, centersContent: true),
         placements: [
             // artwork(side:) with side = min(geo.height*0.62, hasLyrics ? width*0.42 :
             // width*0.6). Drawn as a COVER, not a vinyl: Image(nsImage:
@@ -313,7 +313,7 @@ extension SurfaceLayout {
             // no way to see.
             ElementPlacement(
                 id: UUID(uuidString: "10cfd000-0000-4000-8000-000000000000")!,
-                element: .artwork, col: 0, row: 0, colSpan: 6,
+                element: .artwork, col: 0, row: 0, colSpan: 5,
                 layer: .base, visibility: .always, priority: 0, artworkStyle: .vinyl),
             // SyncedLyricsList(currentSize: 34, otherSize: 25, lineSpacing: 22,
             // fitted: true, fittedCapacity: 5, linesBefore: 1), .frame(maxWidth:
@@ -328,7 +328,7 @@ extension SurfaceLayout {
             // row 0 with the artwork.
             ElementPlacement(
                 id: UUID(uuidString: "10cfd000-0000-4000-8000-000000000001")!,
-                element: .lyrics, col: 6, row: 0, colSpan: 6,
+                element: .lyrics, col: 5, row: 0, colSpan: 5,
                 layer: .base, visibility: .always, priority: 2),
             // Text(musicManager.songTitle), .system(size: 22, weight: .semibold),
             // white, lineLimit(1), centred inside .frame(maxWidth: .infinity) with
@@ -386,7 +386,7 @@ extension SurfaceLayout {
     /// button. VinylPod's opens the desktop player instead of dismissing, so
     /// transport is worth having here.
     public static let defaultLauncher = SurfaceLayout(
-        geometry: GridGeometry(columns: 4),
+        geometry: GridGeometry(columns: 4, contentScale: 0.82),
         placements: [
             // The record: 38x38 ZStack — black circle at 0.85, album art 26x26 clipped
             // to a circle, 5pt spindle dot. Style .vinyl, not .cover. rowSpan 2 in

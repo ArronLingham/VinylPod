@@ -396,8 +396,16 @@ check that was provably dead, twice.
 | 1 — the extraction builds | **done**; 0 errors, launches, status item verified via AX |
 | 2 — layout engine | **done**; `GridSolver` + four defaults, 70/70 in `tests/run_gridsolver_tests.sh` |
 | 3 — desktop player | **done**; renders, resizes, hovers, sends to back. See TESTING.md |
-| 4 — lock screen | next |
+| 4 — lock screen | **built, unverified on a real lock screen.** Both surfaces render via the preview hook |
 | 5 — launcher widget | not started |
+| **The settings editor** | **not built** — see below |
+
+**The layout editor does not exist yet.** The engine, the four defaults and
+every surface that consumes them are done, but there is no UI to rearrange
+anything — so the headline requirement, composing each surface yourself with a
+live preview, is not yet met. Editing a layout today means writing JSON into
+`playerLayouts` by hand. That is the next thing to build, and it is bigger than
+any remaining surface.
 
 `TESTING.md` records what is proven and what still needs a person. The headline
 gap: **nothing here has yet seen a real track** — every check so far ran with

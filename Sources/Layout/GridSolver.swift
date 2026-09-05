@@ -112,9 +112,14 @@ public enum GridSolver {
         let rowMap = compact(&placements)
 
         // 7. Frames.
-        let heights = rowHeights(placements, cellWidth: cellWidth, gutter: geometry.gutter)
-        let resolved = frames(
+        let heights = rowHeights(placements, cellWidth: cellWidth, gutter: geometry.gutter, scale: geometry.contentScale)
+        var resolved = frames(
             placements, geometry: geometry, cellWidth: cellWidth, rowHeights: heights)
+        if geometry.centersContent {
+            resolved = centred(
+                resolved, in: available, geometry: geometry,
+                contentHeight: totalHeight(heights, geometry: geometry))
+        }
 
         _ = rowMap
         return ResolvedLayout(
@@ -250,16 +255,22 @@ public enum GridSolver {
     /// height there was once a fixed 1.36 ratio, so switching the progress bar
     /// off left an empty strip at the bottom of the card instead of making it
     /// shorter.
-    static func rowHeights(_ placements: [ElementPlacement], cellWidth: CGFloat, gutter: CGFloat)
-        -> [CGFloat]
-    {
+    static func rowHeights(
+        _ placements: [ElementPlacement], cellWidth: CGFloat, gutter: CGFloat,
+        scale: CGFloat = 1
+    ) -> [CGFloat] {
         guard let maxRow = placements.map(\.row).max() else { return [] }
         return (0...maxRow).map { row in
             placements
                 .filter { $0.row == row && $0.layer == .base }
                 .map { p in
-                    p.element.metrics.height(
-                        resolvedWidth(span: p.colSpan, cellWidth: cellWidth, gutter: gutter))
+                    let width = resolvedWidth(
+                        span: p.colSpan, cellWidth: cellWidth, gutter: gutter)
+                    // Artwork is square, so its height IS its width and must not
+                    // be scaled again — it already grew with the cells.
+                    return p.element.metrics.growsVertically
+                        ? p.element.metrics.height(width)
+                        : p.element.metrics.height(width) * scale
                 }
                 .max() ?? 0
         }
@@ -309,7 +320,7 @@ public enum GridSolver {
     ) -> [UUID] {
         var dropped: [UUID] = []
         while true {
-            let heights = rowHeights(placements, cellWidth: cellWidth, gutter: geometry.gutter)
+            let heights = rowHeights(placements, cellWidth: cellWidth, gutter: geometry.gutter, scale: geometry.contentScale)
             guard totalHeight(heights, geometry: geometry) > limit else { break }
             let candidates = placements.filter { $0.priority > 0 }
             guard !candidates.isEmpty else { break }
@@ -352,6 +363,39 @@ public enum GridSolver {
         return map
     }
 
+    /// Centre each row horizontally and the whole block vertically.
+    ///
+    /// Rows are shifted as a unit so an overlay keeps its position over the base
+    /// it sits on — shifting the two independently is the same mistake as
+    /// compacting them independently, and separates a play button from its
+    /// artwork.
+    private static func centred(
+        _ elements: [ResolvedElement], in available: CGSize, geometry: GridGeometry,
+        contentHeight: CGFloat
+    ) -> [ResolvedElement] {
+        var byRow: [Int: (minX: CGFloat, maxX: CGFloat)] = [:]
+        for element in elements where element.placement.layer == .base {
+            let row = element.placement.row
+            let existing = byRow[row] ?? (element.frame.minX, element.frame.maxX)
+            byRow[row] = (
+                min(existing.minX, element.frame.minX), max(existing.maxX, element.frame.maxX))
+        }
+
+        let dy: CGFloat =
+            available.height.isFinite && available.height > contentHeight
+            ? (available.height - contentHeight) / 2 : 0
+
+        return elements.map { element in
+            guard let extent = byRow[element.placement.row] else { return element }
+            let used = extent.maxX - extent.minX
+            let dx = (available.width - used) / 2 - extent.minX
+            var frame = element.frame
+            frame.origin.x += dx
+            frame.origin.y += dy
+            return ResolvedElement(placement: element.placement, frame: frame)
+        }
+    }
+
     private static func frames(
         _ placements: [ElementPlacement],
         geometry: GridGeometry,
@@ -383,7 +427,9 @@ public enum GridSolver {
             // centred in the space it was given, rather than being stretched.
             // A stretched play button is a 90pt-wide tap target that looks
             // wrong next to a 30pt one.
-            let elementHeight = min(metrics.height(width), rowHeight)
+            let scaled = metrics.growsVertically
+                ? metrics.height(width) : metrics.height(width) * geometry.contentScale
+            let elementHeight = min(scaled, rowHeight)
             let frame: CGRect
             if metrics.growsHorizontally {
                 frame = CGRect(

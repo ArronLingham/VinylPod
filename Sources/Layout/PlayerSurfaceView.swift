@@ -63,20 +63,17 @@ struct SurfaceStyle {
     /// full-screen player is not.
     var textScale: CGFloat
 
-    static func forSurface(_ surface: PlayerSurface, albumColor: NSColor, tinted: Bool)
-        -> SurfaceStyle
-    {
+    /// `scale` comes from the layout's own `GridGeometry.contentScale`, not
+    /// from a table here — the row heights use the same number, and two
+    /// separate constants is how a 24pt title ended up in a 20pt row.
+    static func forSurface(
+        _ surface: PlayerSurface, albumColor: NSColor, tinted: Bool, scale: CGFloat
+    ) -> SurfaceStyle {
         let ink: Color =
             tinted
             ? (SurfaceStyle.isLight(SurfaceStyle.muted(albumColor))
                 ? .black.opacity(0.82) : .white.opacity(0.92))
             : .white
-        let scale: CGFloat
-        switch surface {
-        case .launcher: scale = 0.82
-        case .lockFull: scale = 1.6
-        case .desktop, .lockWidget: scale = 1.0
-        }
         return SurfaceStyle(
             ink: ink, subtleInk: ink.opacity(0.55), accent: Color(nsColor: albumColor),
             textScale: scale)
@@ -133,8 +130,7 @@ struct PlayerElementView: View {
         case .repeatMode:
             button(music.repeatMode == .one ? "repeat.1" : "repeat",
                    active: music.repeatMode != .off) { music.toggleRepeat() }
-        case .lyrics:
-            button("quote.bubble", active: music.showLyrics) { music.toggleLyrics() }
+        case .lyrics: lyrics
 
         case .progressBar: progressBar
         case .timeElapsed: timeLabel { Self.timestamp($0) }
@@ -151,6 +147,33 @@ struct PlayerElementView: View {
         case .explicitBadge: explicitBadge
         case .clock: clock
         case .timer: placeholder("timer")
+        }
+    }
+
+    /// `lyrics` is two things, and which one you get follows the room it was
+    /// given — which is what a grid is for. One cell is a toggle button, as it
+    /// is in a transport row. Three or more is the scrolling panel, as it is on
+    /// the full-screen lock player, where the layout hands it half the screen.
+    ///
+    /// Before this, a span-6 placement rendered a 13pt speech-bubble glyph in
+    /// the middle of an empty half-screen.
+    @ViewBuilder private var lyrics: some View {
+        if placement.colSpan >= 3 {
+            if music.syncedLyrics.isEmpty {
+                Text(music.currentLyrics.isEmpty ? "" : music.currentLyrics)
+                    .font(.system(size: 15 * style.textScale, weight: .medium))
+                    .foregroundStyle(style.subtleInk)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                SyncedLyricsList(
+                    currentSize: 15 * style.textScale, otherSize: 12 * style.textScale,
+                    lineSpacing: 10 * style.textScale, fitted: true, fittedCapacity: 5,
+                    linesBefore: 1)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        } else {
+            button("quote.bubble", active: music.showLyrics) { music.toggleLyrics() }
         }
     }
 

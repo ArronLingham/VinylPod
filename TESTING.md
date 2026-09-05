@@ -34,6 +34,38 @@ repeating by hand unless something changes:
 | Double-click dead space | window level 0 → -2147483602 |
 | Card opacity | 0.30/0.92/1.00 → measurably blended, monotone |
 
+## Lock screen
+
+Both surfaces are the same `PlayerSurfaceView` as the desktop player, against
+their own layouts. Preview them **without locking the machine**:
+
+```bash
+open -n <build>/VinylPod.app --env VINYLPOD_PREVIEW_LOCK=widget
+open -n <build>/VinylPod.app --env VINYLPOD_PREVIEW_LOCK=full
+```
+
+Debug only. `scripts/check-debug-hooks.sh` asserts it is compiled out of
+Release **and** that it is present in Debug — the second half is what stops the
+check being vacuous, since the string lives in `VinylPod.debug.dylib` and a
+naive grep of `Contents/MacOS/VinylPod` reports 0 for both configurations.
+
+Verified by preview: the widget draws at 380x175, the full-screen player at
+1470x956, both at `CGShieldingWindowLevel` (2147483628), both opaque.
+
+**What the preview cannot tell you, and what therefore remains unverified:**
+
+- **Whether the panel actually appears above the lock screen.** That is the
+  SkyLight delegation, and `CGShieldingWindowLevel` alone is not enough — it
+  clears ordinary windows but not loginwindow's shield. The only way to know is
+  to lock the screen and look.
+- Whether lock and unlock detection fire. The distributed notifications
+  (`com.apple.screenIsLocked` / `…Unlocked`) only arrive from a real lock.
+- Whether the 500 ms unlock poll stops. It runs only while locked and cancels
+  on unlock, but that path has never executed.
+
+Lock the screen once, by hand, and check: the widget appears, double-clicking
+the artwork expands it to full screen, and both are gone after unlocking.
+
 ## What only a person can check
 
 In rough order of how bad it would be to get wrong.

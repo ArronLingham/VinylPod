@@ -1,6 +1,7 @@
 // Extracted from Anchor/Models/Constants.swift — the music-related enums.
 // GPL-3.0. Copyright (C) 2024-2026 Atoll Contributors. See NOTICE.
 
+import AppKit
 import Defaults
 import Foundation
 import SwiftUI
@@ -136,11 +137,35 @@ public enum Style {
 }
 
 extension Defaults.Keys {
-    /// Ported from Anchor's `Constants.swift:1207`. Apple removed the private
-    /// MediaRemote API that `NowPlayingController` uses in macOS 15.4, so newer
-    /// systems start on Apple Music instead.
+    /// Apple removed the private MediaRemote API that `NowPlayingController`
+    /// uses in macOS 15.4, so newer systems cannot start on `.nowPlaying`.
+    ///
+    /// Anchor stops there and returns `.appleMusic` unconditionally, which is
+    /// wrong on a machine that does not have Music.app: the app starts pointed
+    /// at a player that does not exist, shows nothing, and reads as broken with
+    /// no error anywhere. So the installed apps are checked, in order of how
+    /// likely they are to be the one you meant.
+    ///
+    /// Ask LaunchServices, never the filesystem. Music.app is at
+    /// **`/System/Applications/Music.app`**, not `/Applications` — a check for
+    /// the latter reports it missing on a machine that has it, which is how
+    /// this function came to be written in the first place. Anchor records the
+    /// same trap for Safari, which lives in a cryptex and is invisible to a
+    /// directory listing of `/Applications`.
     static var defaultMediaController: MediaControllerType {
-        if #available(macOS 15.4, *) { return .appleMusic }
+        let workspace = NSWorkspace.shared
+        func installed(_ bundleID: String) -> Bool {
+            workspace.urlForApplication(withBundleIdentifier: bundleID) != nil
+        }
+        if #available(macOS 15.4, *) {
+            if installed("com.apple.Music") { return .appleMusic }
+            if installed("com.spotify.client") { return .spotify }
+            if installed("com.amazon.music") { return .amazonMusic }
+            // Nothing recognised is installed. `.nowPlaying` will not work on
+            // this OS either, but it is the one that covers any app the user
+            // installs later without them having to find this setting.
+            return .nowPlaying
+        }
         return .nowPlaying
     }
 }

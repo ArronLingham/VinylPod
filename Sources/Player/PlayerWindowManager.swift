@@ -250,7 +250,8 @@ private struct PlayerRootView: View {
     var body: some View {
         PlayerSurfaceView(
             layout: layouts.desktop,
-            style: .forSurface(.desktop, albumColor: music.avgColor, tinted: tinted),
+            style: .forSurface(.desktop, albumColor: music.avgColor, tinted: tinted,
+                               scale: layouts.desktop.geometry.contentScale),
             hovering: manager.isHovering
         )
         .background(card)

@@ -106,18 +106,23 @@ public struct ElementMetrics: Sendable {
     /// Getting this wrong makes the widget vanish when you double-click the
     /// scrubber, which reads as a bug rather than a feature.
     public let isInteractive: Bool
+    /// `true` when `height` already follows the width it is given, so a surface
+    /// scale must NOT be applied on top — the cells have already grown.
+    public let growsVertically: Bool
 
     public init(
         minSpan: Int,
         preferredSpan: Int,
         growsHorizontally: Bool,
         isInteractive: Bool,
+        growsVertically: Bool = false,
         height: @escaping @Sendable (CGFloat) -> CGFloat
     ) {
         self.minSpan = minSpan
         self.preferredSpan = preferredSpan
         self.growsHorizontally = growsHorizontally
         self.isInteractive = isInteractive
+        self.growsVertically = growsVertically
         self.height = height
     }
 
@@ -138,7 +143,7 @@ public struct ElementMetrics: Sendable {
     static func square(minSpan: Int, preferredSpan: Int, interactive: Bool) -> ElementMetrics {
         ElementMetrics(
             minSpan: minSpan, preferredSpan: preferredSpan, growsHorizontally: true,
-            isInteractive: interactive, height: { $0 })
+            isInteractive: interactive, growsVertically: true, height: { $0 })
     }
 }
 
