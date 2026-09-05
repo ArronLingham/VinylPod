@@ -16,3 +16,11 @@ deleting them would lose the record of how Anchor solved these problems.
 | `BluetoothAudioManager.swift` | `AppDelegate`, `HUD`, `HUDSuppressionCoordinator` | Also **still polls** `IOBluetoothDevice.pairedDevices()` every 15s idle / 3s connected — the largest non-idle main-thread leaf in Anchor. Rewrite to delegate callbacks before bringing it in, and note IOBluetooth blocks on a main-queue semaphore in `init`, which deadlocked Anchor at launch once. |
 
 Do not add these to the target without first resolving the coupling listed above.
+
+| `VinylWidgetView.swift` | superseded | The desktop widget `PlayerSurfaceView` replaces. Its proportional maths is the source the desktop default layout was transcribed from, and `VinylProgressStyle` + `VinylRecordRepresentable` were extracted out of it into `Sources/Vinyl/VinylRecordRepresentable.swift` before it was retired. **Its `vinylBackgroundOpacity` is a dead setting** — `.opacity(cond ? 1 : 1)`, both branches identical. |
+| `VinylWidgetWindowManager.swift` | superseded | Replaced by `Sources/Player/PlayerWindowManager.swift`, which keeps its panel setup, frame autosave, `keptOnScreen` clamp and display-sleep teardown. Its five fixed size presets are gone: the player is now freely resizable. |
+
+Retiring these two mattered rather than being tidiness: `enableVinylWidget`
+would otherwise have stayed a live Defaults key able to put a *second*,
+superseded desktop widget on screen alongside the real one, with no UI saying
+so. That is the dead-switch trap in its most literal form.

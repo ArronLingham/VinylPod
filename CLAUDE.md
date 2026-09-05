@@ -395,11 +395,15 @@ check that was provably dead, twice.
 | 0 — repo, project, CLAUDE.md | **done** |
 | 1 — the extraction builds | **done**; 0 errors, launches, status item verified via AX |
 | 2 — layout engine | **done**; `GridSolver` + four defaults, 70/70 in `tests/run_gridsolver_tests.sh` |
-| 3 — desktop player | next |
-| 4 — lock screen | not started |
+| 3 — desktop player | **done**; renders, resizes, hovers, sends to back. See TESTING.md |
+| 4 — lock screen | next |
 | 5 — launcher widget | not started |
 
-`Reference/` holds seven extracted files that are coupled to Anchor's notch or
+`TESTING.md` records what is proven and what still needs a person. The headline
+gap: **nothing here has yet seen a real track** — every check so far ran with
+nothing playing.
+
+`Reference/` holds nine extracted files that are coupled to Anchor's notch or
 lock screen and are **not in the target**. `Reference/README.md` says what each
 is worth porting for. Do not add one to the build without resolving the coupling
 it lists.

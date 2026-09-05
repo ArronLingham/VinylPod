@@ -173,11 +173,15 @@ extension PlayerElement {
         case .volumeSlider:
             return .fixed(16, minSpan: 2, preferredSpan: 3, grows: true, interactive: true)
 
+        // grows: true, and it matters. A non-growing element is centred at its
+        // intrinsic SQUARE size, which is right for a button and wrong for a
+        // time readout: "00:00" in a 14x14 box renders as a single ellipsis.
+        // That is what the first run of the desktop player actually showed.
         case .timeElapsed, .timeRemaining:
-            return .fixed(14, grows: false)
+            return .fixed(14, minSpan: 1, preferredSpan: 2, grows: true)
         case .trackTimeToggle:
             // Interactive: clicking it flips elapsed to remaining.
-            return .fixed(14, interactive: true)
+            return .fixed(14, minSpan: 1, preferredSpan: 2, grows: true, interactive: true)
 
         case .visualizer:
             // minSpan 1, not 2. `visualizerBarCount` defaults to 4, and four

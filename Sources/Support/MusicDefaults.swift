@@ -27,7 +27,6 @@ extension Defaults.Keys {
     static let enableSneakPeek = Key<Bool>("enableSneakPeek", default: false)
     static let enableSystemHUD = Key<Bool>("enableSystemHUD", default: true)
     static let enableVerticalHUD = Key<Bool>("enableVerticalHUD", default: false)
-    static let enableVinylWidget = Key<Bool>("enableVinylWidget", default: false)
     static let enableVolumeHUD = Key<Bool>("enableVolumeHUD", default: true)
     static let enableWaveformScrubber = Key<Bool>("enableWaveformScrubber", default: true)
     static let lightingEffect = Key<Bool>("lightingEffect", default: true)
@@ -67,15 +66,7 @@ extension Defaults.Keys {
     static let spotifyAuthLastValidatedAt = Key<Double>("spotifyAuthLastValidatedAt", default: 0)
     static let spotifySPDCCookie = Key<String>("spotifySPDCCookie", default: "")
     static let useMusicVisualizer = Key<Bool>("useMusicVisualizer", default: true)
-    static let vinylBackgroundOpacity = Key<Double>("vinylBackgroundOpacity", default: 0)
-    static let vinylOrientation = Key<VinylOrientation>("vinylOrientation", default: .portrait)
     static let vinylProgressStyle = Key<VinylProgressStyle>("vinylProgressStyle", default: .bar)
-    static let vinylShowProgress = Key<Bool>("vinylShowProgress", default: true)
-    static let vinylShowStylus = Key<Bool>("vinylShowStylus", default: true)
-    static let vinylShowTitle = Key<Bool>("vinylShowTitle", default: true)
-    static let vinylUseAlbumColor = Key<Bool>("vinylUseAlbumColor", default: true)
-    static let vinylWidgetSize = Key<VinylWidgetSize>("vinylWidgetSize", default: .regular)
-    static let vinylWindowLevel = Key<VinylWindowLevel>("vinylWindowLevel", default: .desktop)
     static let visualizerBarCount = Key<Int>("visualizerBarCount", default: 4)
     static let waitInterval = Key<Double>("waitInterval", default: 3)
 
@@ -83,6 +74,39 @@ extension Defaults.Keys {
 
     static let accentColor = Key<Color>("accentColor", default: Color.blue)
 
+    // MARK: - VinylPod's own keys
+    //
+    // Everything above is inherited from Anchor. These are new, and each one is
+    // read by code outside Settings before it was added -- a key nothing
+    // consumes is a dead switch.
+
+    /// The four independent surface layouts, in one value. One atomic write,
+    /// one migration, and no way for two surfaces to share a layout by accident.
+    static let playerLayouts = Key<PlayerLayouts>("playerLayouts", default: .defaults)
+
+    static let enablePlayerWidget = Key<Bool>("enablePlayerWidget", default: true)
+    /// Width only. Height is whatever the layout needs at that width.
+    static let playerWidth = Key<Double>("playerWidth", default: 320)
+    /// A height the user has dragged to, or 0 for "whatever the layout needs".
+    /// When set, the solver treats it as a budget and drops the lowest-priority
+    /// elements until the rest fit.
+    static let playerHeightBudget = Key<Double>("playerHeightBudget", default: 0)
+    static let playerWindowLevel = Key<PlayerWindowLevel>("playerWindowLevel", default: .normal)
+    static let playerTintsWithAlbum = Key<Bool>("playerTintsWithAlbum", default: true)
+    /// Unlike Anchor's `vinylBackgroundOpacity`, this one is actually applied.
+    /// That one reached the view as `.opacity(cond ? 1 : 1)` -- both branches
+    /// identical -- so its slider and its five-step context menu did nothing.
+    static let playerBackgroundOpacity = Key<Double>("playerBackgroundOpacity", default: 1.0)
+    /// Growth on hover. On by default; turning it off means a revealed element
+    /// simply has to fit in the resting frame.
+    static let hoverGrowsWidget = Key<Bool>("hoverGrowsWidget", default: true)
+
+    //   the ten vinyl* / launcherShowVinylWidget keys
+    //                                       retired with VinylWidgetView, which
+    //                                       PlayerSurfaceView supersedes. Left in
+    //                                       place they would have kept a second,
+    //                                       superseded desktop widget switchable.
+    //
     // Deliberately absent, and this list is the record of why:
     //
     //   hideNotchOption, perAppVolumeMode   Anchor concepts. VinylPod has no

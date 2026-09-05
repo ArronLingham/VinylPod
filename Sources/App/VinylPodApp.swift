@@ -59,7 +59,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Touching `shared` builds it; its `init` wires the controllers.
         // Deferred off the launch path because `init` reaches AppleScript and
         // CoreAudio, and blocking here is what deadlocks a SwiftUI delegate.
-        DispatchQueue.main.async { _ = MusicManager.shared }
+        DispatchQueue.main.async {
+            _ = MusicManager.shared
+            PlayerWindowManager.shared.start()
+        }
     }
 
     private func setUpStatusItem() {
@@ -91,6 +94,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if #available(macOS 14.0, *) {
             NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
         }
+    }
+}
+
+extension AppDelegate {
+    func applicationWillTerminate(_ notification: Notification) {
+        // AppKit calls this on the main thread; `assumeIsolated` says so rather
+        // than deferring with a Task, which would not run — the app is on its
+        // way out and the run loop stops before a hop could be serviced.
+        MainActor.assumeIsolated { PlayerWindowManager.shared.persistFrame() }
     }
 }
 
