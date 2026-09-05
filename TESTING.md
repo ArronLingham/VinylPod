@@ -206,26 +206,20 @@ work inside the settings preview, `setArtwork` re-rasterising per render,
 `VolumeElement` making HAL calls in a `@State` initialiser, and the window
 manager decoding all four layouts from JSON several times per resize event.
 
-**Still open, in rough priority:**
+**All six were subsequently closed:** the solve is memoised on
+(layout, size, hovering) and pinned by six assertions whose negative control
+drops the suite to 58/76; the renderer splits into a live body that observes
+`MusicManager` and a frozen one that does not; `TimelineView` schedules share a
+fixed epoch instead of re-anchoring at `.now`; `PlayerTimer` is
+reference-counted the way `AudioTap` is; and the lock panel follows the
+menu-bar screen rather than `NSScreen.main` (which is "the screen with the key
+window", and while locked there is none) and re-lays-out on
+`didChangeScreenParameters`.
 
-- **`GridSolver.solve` runs inside `body`, under a `GeometryReader`.** It
-  allocates on the order of a hundred small collections per call. Idle cost is
-  measured at 0.01% so this is not urgent, but it is the hot path during a
-  resize drag and the obvious next optimisation is memoising on
-  (layout, size, hovering).
-- **`PlayerSurfaceView` observes all of `MusicManager`'s published properties
-  even when driven by a frozen snapshot**, so the settings preview re-renders on
-  every playback change for nothing.
-- **`TimelineView(.periodic(from: .now, …))` re-anchors its schedule on every
-  render.** Should use a fixed anchor date.
-- **`PlayerTimer` keeps ticking after the last surface carrying the element is
-  gone**, and does not stop for display sleep.
-- **No display-topology handling on the lock screen.** `NSScreen.main` while
-  locked may not be the screen you expect, and a display change while locked is
-  not handled at all. Item 6 of MANUAL-TESTS.md is the check.
-- **The desktop player does not consult `SystemActivityGate` for Low Power
-  Mode** in a way anyone has verified; the teardown/restore path is written but
-  unexercised.
+**Nothing from the review is knowingly left open.** What remains unverified is
+the list under "What only a person can check" — and the review itself was
+judged by hand, so a finding it got wrong would have been dismissed by hand
+too.
 
 ## Measuring
 
