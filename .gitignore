@@ -28,3 +28,7 @@ Packages/
 # does not show up in `git status`.
 /tmp/
 scratchpad/
+
+# Xcode workspace state created on first open
+VinylPod.xcodeproj/project.xcworkspace/xcuserdata/
+VinylPod.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/

@@ -453,7 +453,10 @@ class MusicManager: ObservableObject {
 
     // Helper to check if macOS has removed support for NowPlayingController
     public private(set) var isNowPlayingDeprecated: Bool = false
-    private let mediaChecker = MediaChecker()
+    /// `MediaChecker` is `@MainActor`, so it cannot be built in a nonisolated
+    /// stored-property initializer. `lazy` defers construction to first use,
+    /// which happens inside a `Task { @MainActor in }` below.
+    @MainActor private lazy var mediaChecker = MediaChecker()
 
     // Active controller
     private var activeController: (any MediaControllerProtocol)?
@@ -503,7 +506,6 @@ class MusicManager: ObservableObject {
     @Published var isShuffled: Bool = false
     @Published var repeatMode: RepeatMode = .off
     @Published var isLiveStream: Bool = false
-    @ObservedObject var coordinator = AnchorViewCoordinator.shared
     @Published var usingAppIconForArtwork: Bool = false
     @Published private(set) var skipGesturePulse: SkipGesturePulse?
 
@@ -699,9 +701,15 @@ class MusicManager: ObservableObject {
             controller.playbackStatePublisher
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] state in
-                    guard let self = self,
-                          self.activeController === controller else { return }
-                    self.updateFromPlaybackState(state)
+                    // `.receive(on: DispatchQueue.main)` above guarantees this
+                    // runs on the main thread, so `assumeIsolated` states what
+                    // is already true rather than deferring with a `Task`.
+                    // It traps if that ever stops holding, which is the point.
+                    MainActor.assumeIsolated {
+                        guard let self = self,
+                              self.activeController === controller else { return }
+                        self.updateFromPlaybackState(state)
+                    }
                 }
                 .store(in: &controllerCancellables)
         }
@@ -1188,19 +1196,17 @@ class MusicManager: ObservableObject {
         }
     }
 
+    /// Anchor peeked the notch open on a track change. VinylPod has no notch,
+    /// so this posts instead and each surface decides what to do with it — the
+    /// desktop widget may flash, the lock screen may not care.
+    ///
+    /// Kept as a hook rather than deleted: the sneak-peek behaviour is wanted
+    /// back at Anchor integration, and a posted notification nothing observes
+    /// is exactly the trap Anchor documents, so the observer is the thing to
+    /// add when a surface wants it — not this call.
     private func updateSneakPeek() {
-        let standardControlsEnabled = Defaults[.showStandardMediaControls]
-        let minimalisticEnabled = Defaults[.enableMinimalisticUI]
-
-        guard standardControlsEnabled || minimalisticEnabled else { return }
-
-        if isPlaying && Defaults[.enableSneakPeek] {
-            if Defaults[.sneakPeekStyles] == .standard {
-                coordinator.toggleSneakPeek(status: true, type: .music)
-            } else {
-                coordinator.toggleExpandingView(status: true, type: .music)
-            }
-        }
+        guard isPlaying, Defaults[.enableSneakPeek] else { return }
+        NotificationCenter.default.post(name: .vinylPodTrackDidChange, object: nil)
     }
 
     // MARK: - Public Methods for controlling playback

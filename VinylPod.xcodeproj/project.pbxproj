@@ -1,0 +1,344 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7E00000000000000000000A1 /* Defaults in Frameworks */ = {isa = PBXBuildFile; productRef = 7E00000000000000000000B1 /* Defaults */; };
+		7E00000000000000000000A2 /* SkyLightWindow in Frameworks */ = {isa = PBXBuildFile; productRef = 7E00000000000000000000B2 /* SkyLightWindow */; };
+		7E00000000000000000000A3 /* LottieUI in Frameworks */ = {isa = PBXBuildFile; productRef = 7E00000000000000000000B3 /* LottieUI */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		7E00000000000000000000C1 /* VinylPod.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VinylPod.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7E00000000000000000000C2 /* VinylPod.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VinylPod.entitlements; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		7E00000000000000000000D1 /* Sources */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Sources; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7E00000000000000000000E1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7E00000000000000000000A1 /* Defaults in Frameworks */,
+				7E00000000000000000000A2 /* SkyLightWindow in Frameworks */,
+				7E00000000000000000000A3 /* LottieUI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7E00000000000000000000F1 = {
+			isa = PBXGroup;
+			children = (
+				7E00000000000000000000D1 /* Sources */,
+				7E00000000000000000000C2 /* VinylPod.entitlements */,
+				7E00000000000000000000F2 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7E00000000000000000000F2 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7E00000000000000000000C1 /* VinylPod.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7E0000000000000000000101 /* VinylPod */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7E0000000000000000000111 /* Build configuration list for PBXNativeTarget "VinylPod" */;
+			buildPhases = (
+				7E0000000000000000000121 /* Sources */,
+				7E00000000000000000000E1 /* Frameworks */,
+				7E0000000000000000000131 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				7E00000000000000000000D1 /* Sources */,
+			);
+			name = VinylPod;
+			packageProductDependencies = (
+				7E00000000000000000000B1 /* Defaults */,
+				7E00000000000000000000B2 /* SkyLightWindow */,
+				7E00000000000000000000B3 /* LottieUI */,
+			);
+			productName = VinylPod;
+			productReference = 7E00000000000000000000C1 /* VinylPod.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7E0000000000000000000141 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					7E0000000000000000000101 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+				};
+			};
+			buildConfigurationList = 7E0000000000000000000151 /* Build configuration list for PBXProject "VinylPod" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 7E00000000000000000000F1;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				7E0000000000000000000161 /* XCRemoteSwiftPackageReference "Defaults" */,
+				7E0000000000000000000162 /* XCRemoteSwiftPackageReference "SkyLightWindow" */,
+				7E0000000000000000000163 /* XCRemoteSwiftPackageReference "LottieUI" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 7E00000000000000000000F2 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7E0000000000000000000101 /* VinylPod */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7E0000000000000000000131 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7E0000000000000000000121 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		7E0000000000000000000171 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		7E0000000000000000000172 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		7E0000000000000000000181 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = VinylPod.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = YES;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "VinylPod controls Music, Spotify and other players with Apple Events to read what is playing and to change tracks.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "GPL-3.0. Derived from Anchor, Atoll and boring.notch.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "VinylPod reads system audio levels to draw the visualiser. Nothing is recorded.";
+				// vDSP (biquad, rmsqv) in the C++ spectrum processor.
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					Accelerate,
+				);
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.arronlingham.VinylPod;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Sources/VinylPod-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		7E0000000000000000000182 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = VinylPod.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = YES;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "VinylPod controls Music, Spotify and other players with Apple Events to read what is playing and to change tracks.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "GPL-3.0. Derived from Anchor, Atoll and boring.notch.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "VinylPod reads system audio levels to draw the visualiser. Nothing is recorded.";
+				// vDSP (biquad, rmsqv) in the C++ spectrum processor.
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					Accelerate,
+				);
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.arronlingham.VinylPod;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Sources/VinylPod-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7E0000000000000000000151 /* Build configuration list for PBXProject "VinylPod" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7E0000000000000000000171 /* Debug */,
+				7E0000000000000000000172 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7E0000000000000000000111 /* Build configuration list for PBXNativeTarget "VinylPod" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7E0000000000000000000181 /* Debug */,
+				7E0000000000000000000182 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7E0000000000000000000161 /* XCRemoteSwiftPackageReference "Defaults" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sindresorhus/Defaults";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
+		7E0000000000000000000162 /* XCRemoteSwiftPackageReference "SkyLightWindow" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Lakr233/SkyLightWindow";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		7E0000000000000000000163 /* XCRemoteSwiftPackageReference "LottieUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jasudev/LottieUI.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7E00000000000000000000B1 /* Defaults */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7E0000000000000000000161 /* XCRemoteSwiftPackageReference "Defaults" */;
+			productName = Defaults;
+		};
+		7E00000000000000000000B2 /* SkyLightWindow */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7E0000000000000000000162 /* XCRemoteSwiftPackageReference "SkyLightWindow" */;
+			productName = SkyLightWindow;
+		};
+		7E00000000000000000000B3 /* LottieUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7E0000000000000000000163 /* XCRemoteSwiftPackageReference "LottieUI" */;
+			productName = LottieUI;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 7E0000000000000000000141 /* Project object */;
+}

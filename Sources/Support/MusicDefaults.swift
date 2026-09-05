@@ -30,10 +30,7 @@ extension Defaults.Keys {
     static let enableVinylWidget = Key<Bool>("enableVinylWidget", default: false)
     static let enableVolumeHUD = Key<Bool>("enableVolumeHUD", default: true)
     static let enableWaveformScrubber = Key<Bool>("enableWaveformScrubber", default: true)
-    static let hideNotchOption = Key<HideNotchOption>("hideNotchOption", default: .nowPlayingOnly)
     static let lightingEffect = Key<Bool>("lightingEffect", default: true)
-    static let lockScreenGlassCustomizationMode = Key<LockScreenGlassCustomizationMode>(
-    static let lockScreenGlassStyle = Key<LockScreenGlassStyle>("lockScreenGlassStyle", default: .liquid)
     static let lockScreenMusicAlbumParallaxEnabled = Key<Bool>("lockScreenMusicAlbumParallaxEnabled", default: false)
     static let lockScreenMusicFullscreenArtworkEnabled = Key<Bool>("lockScreenMusicFullscreenArtworkEnabled", default: true)
     static let lockScreenMusicFullscreenVideoArtwork = Key<Bool>("lockScreenMusicFullscreenVideoArtwork", default: true)
@@ -47,7 +44,6 @@ extension Defaults.Keys {
     static let musicGestureBehavior = Key<MusicSkipBehavior>("musicGestureBehavior", default: .track)
     static let musicSkipBehavior = Key<MusicSkipBehavior>("musicSkipBehavior", default: .track)
     static let parallaxEffectIntensity = Key<Double>("parallaxEffectIntensity", default: 6.0)
-    static let perAppVolumeMode = Key<PerAppVolumeMode>("perAppVolumeMode", default: .presets)
     static let pinnedInputDeviceUID = Key<String>("pinnedInputDeviceUID", default: "")
     static let playerColorTinting = Key<Bool>("playerColorTinting", default: true)
     static let selectedVisualizer = Key<CustomVisualizer?>("selectedVisualizer", default: nil)
@@ -60,13 +56,16 @@ extension Defaults.Keys {
     static let showShuffleAndRepeat = Key<Bool>("showShuffleAndRepeat", default: true)
     static let showSneakPeekOnTrackChange = Key<Bool>("showSneakPeekOnTrackChange", default: true)
     static let showStandardMediaControls = Key<Bool>("showStandardMediaControls", default: true)
+    // NB: the stored name is not the Swift name. Anchor renamed the property
+    // and kept the old string so existing preferences kept working.
     static let sliderColor = Key<SliderColorEnum>(
-    static let sneakPeekStyles = Key<SneakPeekStyle>("sneakPeekStyles", default: .standard)
+        "sliderUseAlbumArtColor",
+        default: SliderColorEnum.white
+    )
     static let spotifyAuthAccessToken = Key<String>("spotifyAuthAccessToken", default: "")
     static let spotifyAuthAccessTokenExpiration = Key<Double>("spotifyAuthAccessTokenExpiration", default: 0)
     static let spotifyAuthLastValidatedAt = Key<Double>("spotifyAuthLastValidatedAt", default: 0)
     static let spotifySPDCCookie = Key<String>("spotifySPDCCookie", default: "")
-    static let timerPresets = Key<[TimerPreset]>("timerPresets", default: TimerPreset.defaultPresets)
     static let useMusicVisualizer = Key<Bool>("useMusicVisualizer", default: true)
     static let vinylBackgroundOpacity = Key<Double>("vinylBackgroundOpacity", default: 0)
     static let vinylOrientation = Key<VinylOrientation>("vinylOrientation", default: .portrait)
@@ -79,4 +78,22 @@ extension Defaults.Keys {
     static let vinylWindowLevel = Key<VinylWindowLevel>("vinylWindowLevel", default: .desktop)
     static let visualizerBarCount = Key<Int>("visualizerBarCount", default: 4)
     static let waitInterval = Key<Double>("waitInterval", default: 3)
+
+    static let notchAnimationProfile = Key<NotchAnimationProfile>("notchAnimationProfile", default: .bouncy)
+
+    static let accentColor = Key<Color>("accentColor", default: Color.blue)
+
+    // Deliberately absent, and this list is the record of why:
+    //
+    //   hideNotchOption, perAppVolumeMode   Anchor concepts. VinylPod has no
+    //                                       notch and no per-app audio engine.
+    //   sneakPeekStyles                     chose between two notch animations;
+    //                                       MusicManager now posts
+    //                                       .vinylPodTrackDidChange instead.
+    //   lockScreenGlassStyle,               come back in Phase 4 with the lock
+    //   lockScreenGlassCustomizationMode    screen, together with their enums.
+    //
+    // A key nothing reads is a dead switch — Anchor shipped four of them and
+    // an audit was needed to find them. Add the key with the code that reads it.
+
 }

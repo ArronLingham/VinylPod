@@ -104,3 +104,58 @@ enum MusicSkipBehavior: String, CaseIterable, Identifiable, Defaults.Serializabl
         }
     }
 }
+
+/// How the album-art colour is derived. Ported from Anchor's
+/// `Models/Constants.swift` because `RealTimeWaveformScrubberView` reads it.
+enum ColorExtractionMode: String, CaseIterable, Identifiable, Defaults.Serializable {
+    case legacy, vibrant
+    var id: Self { self }
+}
+
+/// Ported from Anchor's `Enums/generic.swift` for the same reason.
+enum SliderColorEnum: String, CaseIterable, Defaults.Serializable {
+    case white = "White"
+    case albumArt = "Match album art"
+    case accent = "Accent color"
+
+    var localizedName: String {
+        switch self {
+        case .white: return String(localized: "White")
+        case .albumArt: return String(localized: "Match album art")
+        case .accent: return String(localized: "Accent color")
+        }
+    }
+}
+
+/// Ported from Anchor's `Enums/generic.swift`. `AnchorAnimations` publishes it;
+/// VinylPod has no notch, so `.floating` is the only value that will ever be
+/// set here. Kept as-is so the file folds back into Anchor unchanged.
+public enum Style {
+    case notch
+    case floating
+}
+
+extension Defaults.Keys {
+    /// Ported from Anchor's `Constants.swift:1207`. Apple removed the private
+    /// MediaRemote API that `NowPlayingController` uses in macOS 15.4, so newer
+    /// systems start on Apple Music instead.
+    static var defaultMediaController: MediaControllerType {
+        if #available(macOS 15.4, *) { return .appleMusic }
+        return .nowPlaying
+    }
+}
+
+extension Notification.Name {
+    /// `AudioRouteManager` posts this when the default output device changes.
+    /// Declared in Anchor's `Managers/Audio/SystemMediaControllers.swift`, which
+    /// is a HUD and brightness file and was not part of this extraction.
+    ///
+    /// The string keeps Anchor's prefix on purpose: the two apps run side by
+    /// side during development and a distributed observer keyed to it must see
+    /// the same name from either.
+    static let systemAudioRouteDidChange = Notification.Name("Anchor.systemAudioRouteDidChange")
+
+    /// Posted when the user picks a different playback source. Declared in
+    /// Anchor's `Models/Constants.swift:284`.
+    static let mediaControllerChanged = Notification.Name("mediaControllerChanged")
+}
