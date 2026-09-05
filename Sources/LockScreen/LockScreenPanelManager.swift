@@ -35,6 +35,7 @@ final class LockScreenPanelManager: ObservableObject {
 
     private var window: LockPanel?
     private weak var delegatedWindow: NSWindow?
+    private var displayObserver: NSObjectProtocol?
     private var isPreviewing = false
 
     private init() {}
@@ -69,7 +70,8 @@ final class LockScreenPanelManager: ObservableObject {
 
     func show() {
         guard isPreviewing || Defaults[.enableLockScreenWidget] else { return }
-        guard let screen = NSScreen.main else { return }
+        guard let screen = targetScreen() else { return }
+        observeDisplayChanges()
 
         isImmersive = false
         let panel = existingOrNewWindow(on: screen)
@@ -107,7 +109,7 @@ final class LockScreenPanelManager: ObservableObject {
     /// Tapping the artwork on the small widget expands it to the full-screen
     /// player, and vice versa.
     func setImmersive(_ immersive: Bool) {
-        guard isImmersive != immersive, let window, let screen = window.screen ?? NSScreen.main
+        guard isImmersive != immersive, let window, let screen = window.screen ?? targetScreen()
         else { return }
         isImmersive = immersive
         NSAnimationContext.runAnimationGroup { context in
@@ -149,6 +151,37 @@ final class LockScreenPanelManager: ObservableObject {
         created.onEscape = { [weak self] in self?.setImmersive(false) }
         window = created
         return created
+    }
+
+    /// Which display the panel belongs on.
+    ///
+    /// `NSScreen.main` is "the screen with the key window", and while locked
+    /// there is no key window — so it can be any display, or nil, and the panel
+    /// would land somewhere arbitrary on a multi-display Mac. The screen
+    /// carrying the menu bar is the one the login window itself uses, so that
+    /// is the one to follow, with `.main` as a fallback rather than a first
+    /// choice.
+    private func targetScreen() -> NSScreen? {
+        NSScreen.screens.first { $0.frame.origin == .zero } ?? NSScreen.main ?? NSScreen.screens.first
+    }
+
+    /// Displays can be attached, removed or rearranged while the screen is
+    /// locked — closing a laptop lid does exactly this. Without a re-layout the
+    /// panel is left at coordinates that no longer exist on any display, which
+    /// is indistinguishable from the feature not working.
+    private func observeDisplayChanges() {
+        guard displayObserver == nil else { return }
+        displayObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self, let window = self.window, window.isVisible,
+                    let screen = self.targetScreen()
+                else { return }
+                window.setFrame(self.frame(for: screen, immersive: self.isImmersive), display: true)
+            }
+        }
     }
 
     // MARK: Geometry

@@ -54,6 +54,48 @@ public enum GridSolver {
         }
     }
 
+    // MARK: - Memoisation
+
+    /// Cache key. `SurfaceLayout` is `Hashable`, so this is cheap to form and
+    /// exact — no fingerprinting, no chance of a stale hit.
+    private struct SolveKey: Hashable {
+        let layout: SurfaceLayout
+        let width: CGFloat
+        let height: CGFloat
+        let hovering: Bool
+    }
+
+    /// `solve` is called from inside a SwiftUI `body`, under a `GeometryReader`,
+    /// on a surface that re-renders on every drag frame and every playback
+    /// publish. Each call allocates on the order of a hundred small collections
+    /// — sorts, sets, dictionaries, three array passes.
+    ///
+    /// The inputs are almost always identical between those calls: the layout
+    /// changes when the user edits it, the size when they resize, and neither
+    /// happens per frame. So the answer is memoised.
+    ///
+    /// The cache is deliberately tiny and unordered-evicting. A surface has one
+    /// live (layout, size, hovering) combination and at most a second while a
+    /// hover animation runs; anything beyond that is a resize in flight, where
+    /// every key is new and a cache of any size would miss anyway. An LRU would
+    /// cost more bookkeeping than it saves.
+    private static let cacheLimit = 16
+    private static var cache: [SolveKey: ResolvedLayout] = [:]
+    private static let cacheLock = NSLock()
+
+    private static func cached(_ key: SolveKey) -> ResolvedLayout? {
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
+        return cache[key]
+    }
+
+    private static func store(_ value: ResolvedLayout, for key: SolveKey) {
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
+        if cache.count >= cacheLimit { cache.removeAll(keepingCapacity: true) }
+        cache[key] = value
+    }
+
     // MARK: - Solve
 
     /// - Parameters:
@@ -62,6 +104,19 @@ public enum GridSolver {
     ///     is measured, and it matters: measuring at a finite height would let
     ///     the drop loop interact with the growth decision and oscillate.
     public static func solve(
+        layout: SurfaceLayout,
+        available: CGSize,
+        hovering: Bool
+    ) -> ResolvedLayout {
+        let key = SolveKey(
+            layout: layout, width: available.width, height: available.height, hovering: hovering)
+        if let hit = cached(key) { return hit }
+        let result = computeSolve(layout: layout, available: available, hovering: hovering)
+        store(result, for: key)
+        return result
+    }
+
+    private static func computeSolve(
         layout: SurfaceLayout,
         available: CGSize,
         hovering: Bool

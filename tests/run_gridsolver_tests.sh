@@ -402,6 +402,61 @@ ok("a point in the padding is outside the grid",
                    rowHeights: heights) == nil)
 
 // ---------------------------------------------------------------------------
+print("Memoisation never returns a stale answer")
+
+// solve() caches on (layout, size, hovering). A cache that returns the previous
+// layout's frames after an edit would be invisible in normal use — the surface
+// would simply lag one edit behind — so the property to pin is that a cached
+// call and a fresh one are indistinguishable, and that every input that should
+// change the answer does.
+
+let memoBase = layout(4, [place(.artwork, 0, 0, span: 4), place(.title, 0, 1, span: 4)])
+let firstCall = GridSolver.solve(layout: memoBase, available: unbounded, hovering: false)
+let secondCall = GridSolver.solve(layout: memoBase, available: unbounded, hovering: false)
+ok("a repeated solve returns an identical result", firstCall == secondCall)
+
+// Editing the layout must miss the cache.
+var edited = memoBase
+edited.placements[1].colSpan = 2
+let afterEdit = GridSolver.solve(layout: edited, available: unbounded, hovering: false)
+ok("editing a placement changes the answer",
+   afterEdit.elements.first { $0.placement.element == .title }?.frame.width
+       != firstCall.elements.first { $0.placement.element == .title }?.frame.width)
+
+// So must resizing.
+let narrower = GridSolver.solve(
+    layout: memoBase, available: CGSize(width: 200, height: CGFloat.infinity), hovering: false)
+ok("a different width changes the answer",
+   !near(narrower.requiredSize.height, firstCall.requiredSize.height))
+
+// So must hovering.
+let hoverMemo = layout(4, [
+    place(.artwork, 0, 0, span: 4),
+    place(.progressBar, 0, 1, span: 4, visibility: .onHover),
+])
+ok("hovering changes the answer",
+   GridSolver.solve(layout: hoverMemo, available: unbounded, hovering: true).elements.count
+       != GridSolver.solve(layout: hoverMemo, available: unbounded, hovering: false).elements.count)
+
+// Two layouts differing only in a field the solver reads must not collide.
+var scaled = memoBase
+scaled.geometry.contentScale = 2
+ok("a geometry change is a different cache key",
+   !near(
+       GridSolver.solve(layout: scaled, available: unbounded, hovering: false).requiredSize.height,
+       firstCall.requiredSize.height))
+
+// Push more distinct keys through than the cache can hold, then re-ask for the
+// first one. Eviction must produce a correct answer, not a wrong one.
+for width in stride(from: CGFloat(100), through: 900, by: 25) {
+    _ = GridSolver.solve(
+        layout: memoBase, available: CGSize(width: width, height: CGFloat.infinity),
+        hovering: false)
+}
+ok("an evicted key is recomputed correctly",
+   GridSolver.solve(layout: memoBase, available: unbounded, hovering: false) == firstCall)
+
+// ---------------------------------------------------------------------------
 print("Storage survives the future")
 
 // Adding a PlayerElement case, or a fifth surface at Anchor integration, must
@@ -486,6 +541,12 @@ swiftc -O -o "$WORK/tests" \
 #
 #   GridSolver.canPlace -> return true unconditionally
 #       64/70 — three editor checks
+#
+#   GridSolver.solve -> return the cache entry regardless of the key
+#       (i.e. `if let hit = cache.values.first { return hit }`)
+#       58/76 passed — it does not merely break the memo checks, it collapses the
+#       whole suite, because almost every later assertion solves a different
+#       layout and gets the first one back
 #
 #   PlayerLayouts.init(from:) -> plain synthesised Decodable
 #       66/70 — "a missing surface falls back to its default"

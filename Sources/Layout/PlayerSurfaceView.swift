@@ -33,21 +33,56 @@ struct PlayerSurfaceView: View {
     /// Frozen data for the settings preview. `nil` means live playback.
     var snapshot: PlayerSnapshot?
 
+    var body: some View {
+        // Two bodies, and the split is the point: the live one observes
+        // `MusicManager` and the frozen one does not. A single view holding an
+        // `@ObservedObject` observes it unconditionally, so the settings preview
+        // — which is bound to a fixed sample — re-rendered on every playback
+        // publish, of which there are 29 kinds, for a track it does not show.
+        if let snapshot {
+            SurfaceBody(
+                layout: layout, style: style, hovering: hovering,
+                data: snapshot, actions: .inert, isLive: false)
+        } else {
+            LiveSurfaceBody(layout: layout, style: style, hovering: hovering)
+        }
+    }
+}
+
+/// The live surface. Observes playback; everything else is `SurfaceBody`.
+private struct LiveSurfaceBody: View {
+    let layout: SurfaceLayout
+    let style: SurfaceStyle
+    let hovering: Bool
+
     @ObservedObject private var music = MusicManager.shared
+
+    var body: some View {
+        SurfaceBody(
+            layout: layout, style: style, hovering: hovering,
+            data: .live(music), actions: .live(music), isLive: true)
+    }
+}
+
+private struct SurfaceBody: View {
+    let layout: SurfaceLayout
+    let style: SurfaceStyle
+    let hovering: Bool
+    let data: PlayerSnapshot
+    let actions: PlayerActions
+    let isLive: Bool
 
     var body: some View {
         GeometryReader { geo in
             let resolved = GridSolver.solve(
                 layout: layout, available: geo.size, hovering: hovering)
-            let data = snapshot ?? .live(music)
-            let actions = snapshot == nil ? PlayerActions.live(music) : .inert
             ZStack(alignment: .topLeading) {
                 // `elements` arrives base-first then overlay, which is the draw
                 // order — the renderer needs no z-index of its own.
                 ForEach(resolved.elements, id: \.placement.id) { element in
                     PlayerElementView(
                         placement: element.placement, style: style, data: data,
-                        actions: actions, isLive: snapshot == nil
+                        actions: actions, isLive: isLive
                     )
                     .frame(width: element.frame.width, height: element.frame.height)
                     .offset(x: element.frame.minX, y: element.frame.minY)
@@ -107,6 +142,14 @@ struct SurfaceStyle {
 // MARK: - One element
 
 struct PlayerElementView: View {
+    /// Schedules are anchored here, not at `.now`.
+    ///
+    /// `TimelineView(.periodic(from: .now, by: 0.25))` re-anchors every time the
+    /// view is rebuilt, so a surface that re-renders for any other reason keeps
+    /// restarting its own clock and the cadence never settles. A fixed epoch
+    /// gives every instance the same phase and lets the system coalesce them.
+    static let scheduleAnchor = Date(timeIntervalSince1970: 0)
+
     let placement: ElementPlacement
     let style: SurfaceStyle
     let data: PlayerSnapshot
@@ -217,7 +260,7 @@ struct PlayerElementView: View {
     }
 
     private func progressRing(side: CGFloat) -> some View {
-        TimelineView(.periodic(from: .now, by: data.isPlaying ? 0.25 : 60)) { context in
+        TimelineView(.periodic(from: Self.scheduleAnchor, by: data.isPlaying ? 0.25 : 60)) { context in
             Circle()
                 .trim(from: 0, to: fraction(at: context.date))
                 .stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round))
@@ -302,7 +345,7 @@ struct PlayerElementView: View {
     }
 
     private var progressBar: some View {
-        TimelineView(.periodic(from: .now, by: data.isPlaying ? 0.25 : 60)) { context in
+        TimelineView(.periodic(from: Self.scheduleAnchor, by: data.isPlaying ? 0.25 : 60)) { context in
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule().fill(style.ink.opacity(0.22))
@@ -321,7 +364,7 @@ struct PlayerElementView: View {
     }
 
     private func timeLabel(_ format: @escaping (TimeInterval) -> String) -> some View {
-        TimelineView(.periodic(from: .now, by: data.isPlaying ? 0.5 : 60)) { context in
+        TimelineView(.periodic(from: Self.scheduleAnchor, by: data.isPlaying ? 0.5 : 60)) { context in
             Text(format(data.position(context.date)))
                 .font(.system(size: 10 * style.textScale, weight: .medium).monospacedDigit())
                 .foregroundStyle(style.subtleInk)
@@ -333,7 +376,7 @@ struct PlayerElementView: View {
         Button {
             showingRemaining.toggle()
         } label: {
-            TimelineView(.periodic(from: .now, by: data.isPlaying ? 0.5 : 60)) { context in
+            TimelineView(.periodic(from: Self.scheduleAnchor, by: data.isPlaying ? 0.5 : 60)) { context in
                 let position = data.position(context.date)
                 Text(
                     showingRemaining
@@ -393,7 +436,7 @@ struct PlayerElementView: View {
     /// The system schedules this; nothing here polls. A minute-granularity
     /// `TimelineView` wakes once a minute and not otherwise.
     private var clock: some View {
-        TimelineView(.periodic(from: .now, by: 60)) { context in
+        TimelineView(.periodic(from: Self.scheduleAnchor, by: 60)) { context in
             Text(context.date, style: .time)
                 .font(.system(size: 13 * style.textScale, weight: .medium).monospacedDigit())
                 .foregroundStyle(style.ink)

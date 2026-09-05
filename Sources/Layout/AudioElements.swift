@@ -209,6 +209,12 @@ struct PlayerTimerElement: View {
             Divider()
             Button("Reset") { timer.reset() }
         }
+        // Reference-counted, the way `AudioTap` is. A countdown whose element
+        // has been removed from every surface has nothing to display into, and
+        // a timer ticking for a view that no longer exists is the "a loop that
+        // no-ops is still a loop" trap.
+        .onAppear { if isLive { timer.acquire() } }
+        .onDisappear { if isLive { timer.release() } }
     }
 }
 
@@ -225,8 +231,20 @@ final class PlayerTimer: ObservableObject {
     @Published private(set) var isRunning = false
 
     private var ticker: Timer?
+    private var consumers = 0
 
     private init() {}
+
+    /// A surface is showing the timer element.
+    func acquire() { consumers += 1 }
+
+    /// One fewer surface is showing it. At zero the countdown stops and clears:
+    /// there is nowhere left to display it, and a hidden timer that fires later
+    /// would be a surprise rather than a feature.
+    func release() {
+        consumers = max(0, consumers - 1)
+        if consumers == 0 { reset() }
+    }
 
     var display: String {
         remaining <= 0 ? "--:--" : PlayerElementView.timestamp(remaining)
