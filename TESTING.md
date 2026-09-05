@@ -227,11 +227,18 @@ too.
 |---|---|---|---|---|---|
 | Release, idle, 19 min uptime, shipped defaults | 0.01% | 0.00% | 0.00% | 0.48% | 12.5 MB |
 | Release, same, after the review fixes | 0.03% | 0.00% | 0.00% | 0.95% | 13.2 MB |
+| Release, all fixes + memoisation | 0.01% | 0.00% | 0.00% | 0.47% | 16.2 MB |
 
-87 and 86 samples over 180 s. **The two rows are the same number.** Both have a
-median and p90 of 0.00, so the mean is carried entirely by a noisy tail, and
-this project's own rule is not to read a change of less than roughly 2x as
-signal. Do not quote the second row as a regression or the first as a win. RSS settled 72 → 28 → 12.5 MB over roughly 20 minutes;
+86-87 samples each, all after a 13+ minute settle. **All three rows are the same
+number.** Every median and p90 is 0.00, so each mean is carried entirely by a
+noisy tail, and this project's own rule is not to read a change of less than
+roughly 2x as signal. The RSS spread (12.5 / 13.2 / 16.2 MB) is the same story
+— do not quote any of these against another as a win or a regression.
+
+What they do establish, together, is a **ceiling**: an idle VinylPod costs
+essentially nothing, and none of the review fixes changed that. The memoisation
+was for the resize path, which none of these rows measures — that would need a
+sampler running during a drag, and there is no figure for it. RSS settled 72 → 28 → 12.5 MB over roughly 20 minutes;
 the reading at 5 minutes would have been about six times too high.
 
 That is below Anchor's best recorded row (16 MB) and its best idle CPU (0.03%),
