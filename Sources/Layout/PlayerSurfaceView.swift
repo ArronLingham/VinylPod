@@ -161,9 +161,16 @@ struct PlayerElementView: View {
     var body: some View {
         switch placement.element {
         case .artwork: artwork
-        case .title: text(data.title, size: 15, weight: .semibold)
-        case .artist: text(data.artist, size: 12, weight: .regular, subtle: true)
-        case .album: text(data.album, size: 12, weight: .regular, subtle: true)
+        // With nothing playing the title says so and the other two say nothing.
+        // Three lines of "Nothing playing" would be worse than one, and the
+        // alternative — leaving all three blank — leaves a card that looks
+        // broken rather than idle.
+        case .title:
+            text(
+                data.hasTrack ? data.title : String(localized: "Nothing playing"),
+                size: 15, weight: .semibold, subtle: !data.hasTrack)
+        case .artist: text(data.hasTrack ? data.artist : "", size: 12, weight: .regular, subtle: true)
+        case .album: text(data.hasTrack ? data.album : "", size: 12, weight: .regular, subtle: true)
 
         case .playPause:
             button(
@@ -237,14 +244,26 @@ struct PlayerElementView: View {
                     // labelFraction 0.46 matches what VinylWidgetView passes;
                     // the view's own default of 0.38 is for a smaller record.
                     VinylRecordRepresentable(
-                        artwork: data.artwork, isPlaying: data.isPlaying, labelFraction: 0.46)
+                        artwork: data.hasTrack ? data.artwork : nil,
+                        isPlaying: data.isPlaying, labelFraction: 0.46)
                     if placement.artworkStyle.showsStylus { tonearm(side: side) }
                 case .cover:
-                    Image(nsImage: data.artwork)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: side, height: side)
-                        .clipShape(RoundedRectangle(cornerRadius: side * 0.06, style: .continuous))
+                    if data.hasTrack {
+                        Image(nsImage: data.artwork)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: side, height: side)
+                            .clipShape(
+                                RoundedRectangle(cornerRadius: side * 0.06, style: .continuous))
+                    } else {
+                        RoundedRectangle(cornerRadius: side * 0.06, style: .continuous)
+                            .fill(style.ink.opacity(0.08))
+                            .overlay(
+                                Image(systemName: "music.note")
+                                    .font(.system(size: side * 0.3, weight: .light))
+                                    .foregroundStyle(style.ink.opacity(0.25)))
+                            .frame(width: side, height: side)
+                    }
                 }
                 if placement.artworkStyle.showsProgressRing { progressRing(side: side) }
             }
@@ -340,7 +359,7 @@ struct PlayerElementView: View {
     /// `playbackRate`, so a `TimelineView` animates smoothly while the manager
     /// stays quiet.
     private func fraction(at date: Date) -> CGFloat {
-        guard data.duration > 0, data.duration.isFinite else { return 0 }
+        guard data.hasTrack, data.duration > 0, data.duration.isFinite else { return 0 }
         return min(max(data.position(date) / data.duration, 0), 1)
     }
 
@@ -365,7 +384,7 @@ struct PlayerElementView: View {
 
     private func timeLabel(_ format: @escaping (TimeInterval) -> String) -> some View {
         TimelineView(.periodic(from: Self.scheduleAnchor, by: data.isPlaying ? 0.5 : 60)) { context in
-            Text(format(data.position(context.date)))
+            Text(data.hasTrack ? format(data.position(context.date)) : "--:--")
                 .font(.system(size: 10 * style.textScale, weight: .medium).monospacedDigit())
                 .foregroundStyle(style.subtleInk)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

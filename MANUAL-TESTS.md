@@ -123,7 +123,24 @@ I have not tested any of this; there is one screen attached here.
 - [ ] Lock the screen with two displays attached. Which one does the widget
       appear on, and is that the one you wanted?
 
-## 7. Living with it
+## 7. The things added last
+
+- [ ] **Nothing playing.** With no music app running the player should say
+      "Nothing playing", show a blank record, blank artist and album, `--:--`
+      for both times, and a neutral dark card — **not** a pink card reading
+      "I'm Handsome / Me / Self Love". That was Anchor's placeholder joke and it
+      reached the screen as a fabricated track.
+- [ ] **Then start playing.** It should fill in without a relaunch.
+- [ ] **Open at login.** Settings → Player → General. In a Debug or ad-hoc
+      build this correctly reads "Unavailable for this build"; it only works
+      from a properly signed app in /Applications. Turn it on there, log out and
+      back in.
+- [ ] **The app icon.** A record on a purple-to-pink plate, in the Dock while
+      Settings is open and in Finder. Regenerate with
+      `swift scripts/make-icon.swift Sources/Assets.xcassets/AppIcon.appiconset`
+      if you want to change it — it is drawn in code, not a binary blob.
+
+## 8. Living with it
 
 The things a short test cannot find.
 
@@ -146,7 +163,7 @@ The things a short test cannot find.
 - **The launcher widget is not reachable.** It is built and uses the same
   engine, but VinylPod has no launcher — it gets wired up when this folds into
   Anchor.
-- **No app icon.** It uses the generic one.
+
 - **No updater**, deliberately. Anchor's Sparkle channels all point at upstream
   Atoll's appcast and once replaced Anchor with upstream.
 - **The desktop card's artist and album sit side by side.** That is faithful to

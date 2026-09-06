@@ -51,9 +51,14 @@ private struct LyricsLookupKey: Hashable {
     }
 }
 
+/// Shown when there is no artwork — because nothing is playing, or because the
+/// source has not supplied any.
+///
+/// A music note, not Anchor's `heart.fill`. The heart is a joke that reads as a
+/// "favourited" badge on a real player.
 let defaultImage: NSImage = .init(
-    systemSymbolName: "heart.fill",
-    accessibilityDescription: "Album Art"
+    systemSymbolName: "music.note",
+    accessibilityDescription: "No album art"
 )!
 
 private struct ITunesExplicitnessSearchResponse: Decodable {
@@ -466,11 +471,18 @@ class MusicManager: ObservableObject {
     private var isPearDesktopAutoSwitched: Bool = false
 
     // Published properties for UI
-    @Published var songTitle: String = "I'm Handsome"
-    @Published var artistName: String = "Me"
+    // Empty, not "I'm Handsome" / "Me" / "Self Love".
+    //
+    // Those are Anchor's placeholder joke, and on a shipped player they are a
+    // fabricated track shown to someone who has nothing playing — which reads
+    // as the app being wrong about reality rather than as a placeholder.
+    // `hasTrack` below is derived from the title being non-empty, so the
+    // surfaces can say "Nothing playing" honestly instead.
+    @Published var songTitle: String = ""
+    @Published var artistName: String = ""
     @Published var albumArt: NSImage = defaultImage
     @Published var isPlaying = false
-    @Published var album: String = "Self Love"
+    @Published var album: String = ""
     @Published var isPlayerIdle: Bool = true
     @Published var isCurrentTrackExplicit: Bool = false
 
@@ -554,9 +566,9 @@ class MusicManager: ObservableObject {
     private var liveStreamCompletionReleaseCount: Int = 0
 
     // Store last values at the time artwork was changed
-    private var lastArtworkTitle: String = "I'm Handsome"
-    private var lastArtworkArtist: String = "Me"
-    private var lastArtworkAlbum: String = "Self Love"
+    private var lastArtworkTitle: String = ""
+    private var lastArtworkArtist: String = ""
+    private var lastArtworkAlbum: String = ""
     private var lastArtworkBundleIdentifier: String? = nil
     private var lastArtworkContentIdentifier: String? = nil
     private var lastArtworkContentURL: String? = nil
@@ -1184,6 +1196,12 @@ class MusicManager: ObservableObject {
     }
 
     // MARK: - Playback Position Estimation
+    /// Whether a real track is known.
+    ///
+    /// The title is the signal because every controller sets it first and none
+    /// reports an untitled track.
+    public var hasTrack: Bool { !songTitle.isEmpty }
+
     public func estimatedPlaybackPosition(at date: Date = Date()) -> TimeInterval {
         guard isPlaying else { return min(elapsedTime, songDuration) }
 

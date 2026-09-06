@@ -36,9 +36,25 @@ struct PlayerSettingsView: View {
     @Default(.mediaController) private var source
     @Default(.lockWidgetVerticalOffset) private var lockOffset
     @Default(.enableLyrics) private var lyricsEnabled
+    @StateObject private var launchAtLogin = LaunchAtLogin.shared
+    @State private var launchError: String?
 
     var body: some View {
         Form {
+            Section("General") {
+                Toggle(
+                    "Open VinylPod at login",
+                    isOn: Binding(
+                        get: { launchAtLogin.isEnabled },
+                        set: { launchError = launchAtLogin.set($0) }))
+                if let launchError {
+                    Text(launchError).font(.caption).foregroundStyle(.red)
+                } else {
+                    Text(launchAtLogin.statusDescription)
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+            }
+
             Section("Desktop player") {
                 Toggle("Show the desktop player", isOn: $desktopEnabled)
                 Picker("Position", selection: $windowLevel) {

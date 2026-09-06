@@ -116,9 +116,9 @@ extension AppDelegate: NSMenuDelegate {
     func menuWillOpen(_ menu: NSMenu) {
         guard let item = menu.item(withTag: Self.nowPlayingTag) else { return }
         let music = MusicManager.shared
-        item.title = music.isPlayerIdle
-            ? "Nothing playing"
-            : "\(music.songTitle) — \(music.artistName)"
+        item.title = music.hasTrack
+            ? "\(music.songTitle) — \(music.artistName)"
+            : "Nothing playing"
     }
 }
 

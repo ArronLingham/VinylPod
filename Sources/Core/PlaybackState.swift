@@ -32,9 +32,15 @@ enum RepeatMode: Int, Codable {
 struct PlaybackState {
     var bundleIdentifier: String
     var isPlaying: Bool = false
-    var title: String = "I'm Handsome"
-    var artist: String = "Me"
-    var album: String = "Self Love"
+    // Empty, not Anchor's "I'm Handsome" / "Me" / "Self Love". A controller
+    // that reports no track must not hand the player a fabricated one — and
+    // this struct, not MusicManager's published defaults, is what actually
+    // reached the screen: the manager's own defaults were changed first and the
+    // fake track carried on showing, because every controller emits a
+    // default-constructed PlaybackState before it knows anything.
+    var title: String = ""
+    var artist: String = ""
+    var album: String = ""
     var contentIdentifier: String?
     var contentURL: String?
     var isExplicit: Bool?

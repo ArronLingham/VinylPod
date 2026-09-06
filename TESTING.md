@@ -168,6 +168,7 @@ Both of these were real, and both were found only by driving the running app.
 | Feature | Needs | State |
 |---|---|---|
 | Reading playback from Music / Spotify / Amazon | Apple Events | prompts on first use |
+| Open at login | none, but needs a signed app outside DerivedData | reports "Unavailable for this build" otherwise |
 | The audio visualiser element | audio-capture | entitlement declared, unexercised |
 | Lock-screen surfaces | none, but uses private SkyLight API | built, unverified on a real lock |
 | Output device / volume elements | none | built, live |

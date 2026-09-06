@@ -266,8 +266,9 @@ private struct PlayerRootView: View {
     var body: some View {
         PlayerSurfaceView(
             layout: layouts.desktop,
-            style: .forSurface(.desktop, albumColor: music.avgColor, tinted: tinted,
-                               scale: layouts.desktop.geometry.contentScale),
+            style: .forSurface(
+                .desktop, albumColor: music.avgColor, tinted: tinted && music.hasTrack,
+                scale: layouts.desktop.geometry.contentScale),
             hovering: manager.isHovering
         )
         .background(card)
@@ -285,7 +286,11 @@ private struct PlayerRootView: View {
     }
 
     private var cardColor: Color {
-        tinted ? Color(nsColor: SurfaceStyle.muted(music.avgColor)) : Color(white: 0.12)
+        // An album colour with no album is not a colour to trust — the average
+        // is taken from the placeholder glyph, which produced a pink card for a
+        // player showing "Nothing playing".
+        guard tinted, music.hasTrack else { return Color(white: 0.12) }
+        return Color(nsColor: SurfaceStyle.muted(music.avgColor))
     }
 
     /// Closing offers a choice rather than doing something silently. Anchor's

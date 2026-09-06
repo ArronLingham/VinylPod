@@ -45,6 +45,8 @@ struct PlayerSnapshot {
     var currentLyric: String
     var hasSyncedLyrics: Bool
     var avgColor: NSColor
+    /// False when nothing is playing and nothing is loaded.
+    var hasTrack: Bool
 
     /// Where playback is at `date`.
     ///
@@ -69,6 +71,7 @@ struct PlayerSnapshot {
             currentLyric: music.currentLyrics,
             hasSyncedLyrics: !music.syncedLyrics.isEmpty,
             avgColor: music.avgColor,
+            hasTrack: music.hasTrack,
             position: { date in
                 MainActor.assumeIsolated { music.estimatedPlaybackPosition(at: date) }
             })
@@ -95,6 +98,7 @@ struct PlayerSnapshot {
         currentLyric: "",
         hasSyncedLyrics: false,
         avgColor: NSColor(calibratedRed: 0.42, green: 0.36, blue: 0.62, alpha: 1),
+        hasTrack: true,
         position: { _ in 78 })  // 1:18 elapsed, -2:24 remaining
 
     /// A plausible cover, drawn rather than shipped as an asset.
