@@ -1,4 +1,4 @@
-// Draws VinylPod's app icon and writes an .iconset.
+// Draws Cadence's app icon and writes an .iconset.
 //
 // Generated rather than shipped as a binary blob so it is reviewable, editable
 // and diffable — and so a public repo carries no opaque art whose provenance

@@ -19,7 +19,7 @@ highest-value hour you can spend.
 placeholder joke. That is fixed; §7 covers what idle should look like now.)
 
 There is an **Automation permission dialog still open on your screen** from my
-attempt at this. Allow it, or dismiss it and let VinylPod prompt you itself.
+attempt at this. Allow it, or dismiss it and let Cadence prompt you itself.
 
 - [ ] Play something in **Apple Music**. Title, artist, album and artwork all
       correct in the desktop player?
@@ -147,7 +147,7 @@ I have not tested any of this; there is one screen attached here.
 The things a short test cannot find.
 
 - [ ] Leave it running for a day. Does memory stay flat? Re-run
-      `scripts/measure.sh VinylPod 180 "after a day"` and compare.
+      `scripts/measure.sh Cadence 180 "after a day"` and compare.
 - [ ] Quit and relaunch. Is the player where you left it, at the size you left
       it, with your layout intact?
 - [ ] Log out and back in. Same.
@@ -163,7 +163,7 @@ The things a short test cannot find.
 ## Known-unfinished, so don't report these as bugs
 
 - **The launcher widget is not reachable.** It is built and uses the same
-  engine, but VinylPod has no launcher — it gets wired up when this folds into
+  engine, but Cadence has no launcher — it gets wired up when this folds into
   Anchor.
 
 - **No updater**, deliberately. Anchor's Sparkle channels all point at upstream

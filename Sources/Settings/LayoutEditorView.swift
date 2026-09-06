@@ -1,6 +1,6 @@
 /*
- * VinylPod
- * Copyright (C) 2026 VinylPod Contributors
+ * Cadence
+ * Copyright (C) 2026 Cadence Contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -214,7 +214,7 @@ struct LayoutEditorView: View {
                 layout = PlayerLayouts.defaults[surface]
                 selection = nil
             }
-            .help("Restore this surface to the layout VinylPod ships with.")
+            .help("Restore this surface to the layout Cadence ships with.")
         }
         .padding(12)
         .frame(height: 52)
@@ -240,7 +240,7 @@ struct LayoutEditorView: View {
     /// in the middle of a 40pt button reported (20, 20) and every drag landed
     /// near the origin — about one cell short, which reads as an off-by-one
     /// rather than as the wrong coordinate system.
-    private static let surfaceSpace = "vinylpod.surface"
+    private static let surfaceSpace = "cadence.surface"
 
     /// Every placement, laid out as if all of them were visible.
     private var hitTestLayout: GridSolver.ResolvedLayout {

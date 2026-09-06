@@ -1,6 +1,6 @@
 /*
- * VinylPod
- * Copyright (C) 2026 VinylPod Contributors
+ * Cadence
+ * Copyright (C) 2026 Cadence Contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,11 +52,11 @@ final class LockScreenPanelManager: ObservableObject {
     /// said so. Anchor shipped exactly this kind of hook unguarded once and it
     /// leaked a Keychain value into a PNG.
     ///
-    ///     VINYLPOD_PREVIEW_LOCK=widget open -n VinylPod.app
-    ///     VINYLPOD_PREVIEW_LOCK=full   open -n VinylPod.app
+    ///     CADENCE_PREVIEW_LOCK=widget open -n Cadence.app
+    ///     CADENCE_PREVIEW_LOCK=full   open -n Cadence.app
     #if DEBUG
         func previewIfRequested() {
-            guard let mode = ProcessInfo.processInfo.environment["VINYLPOD_PREVIEW_LOCK"]
+            guard let mode = ProcessInfo.processInfo.environment["CADENCE_PREVIEW_LOCK"]
             else { return }
             // Bypass the guard rather than writing the key. A first version set
             // `enableLockScreenWidget = true`, which PERSISTS -- so previewing a

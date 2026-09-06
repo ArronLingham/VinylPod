@@ -1,7 +1,7 @@
 # Reference — not built
 
 These files came across in the extraction but are coupled to Anchor's notch or
-lock-screen surfaces and are **not in the VinylPod target**. They are kept
+lock-screen surfaces and are **not in the Cadence target**. They are kept
 because each contains logic worth porting rather than reinventing, and because
 deleting them would lose the record of how Anchor solved these problems.
 
@@ -25,6 +25,6 @@ would otherwise have stayed a live Defaults key able to put a *second*,
 superseded desktop widget on screen alongside the real one, with no UI saying
 so. That is the dead-switch trap in its most literal form.
 
-| `MusicControlButton.swift` | superseded | The five-slot, button-only model on one global key that `PlayerElement` replaces. Kept because `DefaultLayouts.swift` cites its slot positions as the source of the desktop transport arrangement, and because Anchor still uses it — folding VinylPod back in means reconciling the two. Its `musicControlSlots` key is gone: a live Defaults key backed by a type nothing drew from is a dead switch by this project's own definition. |
+| `MusicControlButton.swift` | superseded | The five-slot, button-only model on one global key that `PlayerElement` replaces. Kept because `DefaultLayouts.swift` cites its slot positions as the source of the desktop transport arrangement, and because Anchor still uses it — folding Cadence back in means reconciling the two. Its `musicControlSlots` key is gone: a live Defaults key backed by a type nothing drew from is a dead switch by this project's own definition. |
 
 | `LottieAnimationView.swift` | dead + broke Release | Referenced by nothing but itself, and it pulled in LottieUI -> lottie-spm, a **dynamic** xcframework. The hand-written pbxproj has no embed phase, so the Release build launched and immediately died in dyld: `Library not loaded: @rpath/Lottie.framework`. Debug survived because DerivedData's PackageFrameworks happened to be on the runpath. Dropping it removed the dependency rather than adding an embed phase for a framework nothing used. If Lottie is ever wanted, the embed phase has to come with it. |

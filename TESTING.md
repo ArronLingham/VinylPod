@@ -1,4 +1,4 @@
-# Testing VinylPod
+# Testing Cadence
 
 Organised by **what you need in order to run it**, not by when it was written.
 New checks go in the section they belong to. Do not append a dated section —
@@ -40,14 +40,14 @@ Both surfaces are the same `PlayerSurfaceView` as the desktop player, against
 their own layouts. Preview them **without locking the machine**:
 
 ```bash
-open -n <build>/VinylPod.app --env VINYLPOD_PREVIEW_LOCK=widget
-open -n <build>/VinylPod.app --env VINYLPOD_PREVIEW_LOCK=full
+open -n <build>/Cadence.app --env CADENCE_PREVIEW_LOCK=widget
+open -n <build>/Cadence.app --env CADENCE_PREVIEW_LOCK=full
 ```
 
 Debug only. `scripts/check-debug-hooks.sh` asserts it is compiled out of
 Release **and** that it is present in Debug — the second half is what stops the
-check being vacuous, since the string lives in `VinylPod.debug.dylib` and a
-naive grep of `Contents/MacOS/VinylPod` reports 0 for both configurations.
+check being vacuous, since the string lives in `Cadence.debug.dylib` and a
+naive grep of `Contents/MacOS/Cadence` reports 0 for both configurations.
 
 Verified by preview: the widget draws at 380x175, the full-screen player at
 1470x956, both at `CGShieldingWindowLevel` (2147483628), both opaque.
@@ -68,14 +68,14 @@ the artwork expands it to full screen, and both are gone after unlocking.
 
 ## Launcher widget
 
-Not reachable in VinylPod — it is wired into Anchor's launcher at integration —
+Not reachable in Cadence — it is wired into Anchor's launcher at integration —
 so it had been built, committed and **never once rendered**, which is the
 "complete but unreachable" shape this project keeps recording, self-inflicted.
 It has a Debug preview now:
 
 ```bash
-open -n <build>/VinylPod.app --env VINYLPOD_PREVIEW_LAUNCHER=1      # hover-only controls
-open -n <build>/VinylPod.app --env VINYLPOD_PREVIEW_LAUNCHER=hover  # always visible
+open -n <build>/Cadence.app --env CADENCE_PREVIEW_LAUNCHER=1      # hover-only controls
+open -n <build>/Cadence.app --env CADENCE_PREVIEW_LAUNCHER=hover  # always visible
 ```
 
 Verified: the card draws at 220pt on `.regularMaterial` with the right corner
@@ -191,7 +191,7 @@ Both of these were real, and both were found only by driving the running app.
 | Output device / volume elements | none | built, live |
 | AirPlay element | Apple Events (Music) | built, unverified |
 
-**A missing usage description is a CRASH, not a prompt.** VinylPod died with
+**A missing usage description is a CRASH, not a prompt.** Cadence died with
 SIGABRT inside `__TCC_CRASHING_DUE_TO_PRIVACY_VIOLATION__` because
 `AnimatedArtworkManager` calls `MusicAuthorization.request()` and the Info.plist
 had no `NSAppleMusicUsageDescription`. There is no dialog and no error return —
@@ -227,7 +227,7 @@ Four checks, each for a shape that has actually occurred here:
 4. A `PlayerElement` case `PlayerSurfaceView` never draws.
 
 **Its first run removed 35 keys.** All were Anchor settings for features
-VinylPod does not have — the notch UI, six system HUDs, the camera mirror,
+Cadence does not have — the notch UI, six system HUDs, the camera mirror,
 per-app audio, the music control window, Bluetooth announcements — that came
 across with the extraction. Every one was a switch a user could flip in a plist
 to no effect at all. It also exposed nine settings that were read by code and
@@ -317,7 +317,7 @@ noisy tail, and this project's own rule is not to read a change of less than
 roughly 2x as signal. The RSS spread (12.5 / 13.2 / 16.2 MB) is the same story
 — do not quote any of these against another as a win or a regression.
 
-What they do establish, together, is a **ceiling**: an idle VinylPod costs
+What they do establish, together, is a **ceiling**: an idle Cadence costs
 essentially nothing, and none of the review fixes changed that. The memoisation
 was for the resize path, which none of these rows measures — that would need a
 sampler running during a drag, and there is no figure for it. RSS settled 72 → 28 → 12.5 MB over roughly 20 minutes;

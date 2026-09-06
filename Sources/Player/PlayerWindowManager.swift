@@ -1,6 +1,6 @@
 /*
- * VinylPod
- * Copyright (C) 2026 VinylPod Contributors
+ * Cadence
+ * Copyright (C) 2026 Cadence Contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -111,7 +111,7 @@ final class PlayerWindowManager: ObservableObject {
             MainActor.assumeIsolated { self?.isDeadSpace(at: point) ?? true }
         }
 
-        created.setFrameAutosaveName("VinylPodPlayer")
+        created.setFrameAutosaveName("CadencePlayer")
         if created.frame.origin == .zero { created.setFrameOrigin(defaultOrigin(for: size)) }
         panel = created
         clampOnScreen()
@@ -119,12 +119,12 @@ final class PlayerWindowManager: ObservableObject {
 
     private func tearDown() {
         guard let panel else { return }
-        panel.saveFrame(usingName: "VinylPodPlayer")
+        panel.saveFrame(usingName: "CadencePlayer")
         panel.orderOut(nil)
         self.panel = nil
     }
 
-    func persistFrame() { panel?.saveFrame(usingName: "VinylPodPlayer") }
+    func persistFrame() { panel?.saveFrame(usingName: "CadencePlayer") }
 
     // MARK: Size
 
@@ -319,7 +319,7 @@ private struct PlayerRootView: View {
                     Text("Stays on the desktop, behind your windows.")
                         .font(.caption).foregroundStyle(.secondary)
                     Divider()
-                    Button("Quit VinylPod") { NSApp.terminate(nil) }
+                    Button("Quit Cadence") { NSApp.terminate(nil) }
                     Text("Turn the widget off in Settings to hide it without quitting.")
                         .font(.caption).foregroundStyle(.secondary)
                 }

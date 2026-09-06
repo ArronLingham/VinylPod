@@ -51,7 +51,7 @@ enum VinylWindowLevel: String, Codable, CaseIterable, Defaults.Serializable {
     }
 }
 
-/// Size presets, matching VinylPod's own four.
+/// Size presets, matching Cadence's own four.
 /// Which way round the card is laid out.
 enum VinylOrientation: String, Codable, CaseIterable, Defaults.Serializable {
     /// Record on top, text and transport beneath.

@@ -129,7 +129,7 @@ enum SliderColorEnum: String, CaseIterable, Defaults.Serializable {
 }
 
 /// Ported from Anchor's `Enums/generic.swift`. `AnchorAnimations` publishes it;
-/// VinylPod has no notch, so `.floating` is the only value that will ever be
+/// Cadence has no notch, so `.floating` is the only value that will ever be
 /// set here. Kept as-is so the file folds back into Anchor unchanged.
 public enum Style {
     case notch

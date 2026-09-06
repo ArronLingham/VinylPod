@@ -12,8 +12,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		7E00000000000000000000C1 /* VinylPod.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VinylPod.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		7E00000000000000000000C2 /* VinylPod.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VinylPod.entitlements; sourceTree = "<group>"; };
+		7E00000000000000000000C1 /* Cadence.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cadence.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7E00000000000000000000C2 /* Cadence.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Cadence.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -37,7 +37,7 @@
 			isa = PBXGroup;
 			children = (
 				7E00000000000000000000D1 /* Sources */,
-				7E00000000000000000000C2 /* VinylPod.entitlements */,
+				7E00000000000000000000C2 /* Cadence.entitlements */,
 				7E00000000000000000000F2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -45,7 +45,7 @@
 		7E00000000000000000000F2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7E00000000000000000000C1 /* VinylPod.app */,
+				7E00000000000000000000C1 /* Cadence.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -53,9 +53,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		7E0000000000000000000101 /* VinylPod */ = {
+		7E0000000000000000000101 /* Cadence */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7E0000000000000000000111 /* Build configuration list for PBXNativeTarget "VinylPod" */;
+			buildConfigurationList = 7E0000000000000000000111 /* Build configuration list for PBXNativeTarget "Cadence" */;
 			buildPhases = (
 				7E0000000000000000000121 /* Sources */,
 				7E00000000000000000000E1 /* Frameworks */,
@@ -68,13 +68,13 @@
 			fileSystemSynchronizedGroups = (
 				7E00000000000000000000D1 /* Sources */,
 			);
-			name = VinylPod;
+			name = Cadence;
 			packageProductDependencies = (
 				7E00000000000000000000B1 /* Defaults */,
 				7E00000000000000000000B2 /* SkyLightWindow */,
 			);
-			productName = VinylPod;
-			productReference = 7E00000000000000000000C1 /* VinylPod.app */;
+			productName = Cadence;
+			productReference = 7E00000000000000000000C1 /* Cadence.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -92,7 +92,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 7E0000000000000000000151 /* Build configuration list for PBXProject "VinylPod" */;
+			buildConfigurationList = 7E0000000000000000000151 /* Build configuration list for PBXProject "Cadence" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -110,7 +110,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				7E0000000000000000000101 /* VinylPod */,
+				7E0000000000000000000101 /* Cadence */,
 			);
 		};
 /* End PBXProject section */
@@ -203,7 +203,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = VinylPod.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Cadence.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -212,10 +212,10 @@
 				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSAppleEventsUsageDescription = "VinylPod controls Music, Spotify and other players with Apple Events to read what is playing and to change tracks.";
-				INFOPLIST_KEY_NSAppleMusicUsageDescription = "VinylPod reads your Apple Music library to fetch animated album artwork for the track you are playing.";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Cadence controls Music, Spotify and other players with Apple Events to read what is playing and to change tracks.";
+				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Cadence reads your Apple Music library to fetch animated album artwork for the track you are playing.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "GPL-3.0. Derived from Anchor, Atoll and boring.notch.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "VinylPod reads system audio levels to draw the visualiser. Nothing is recorded.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Cadence reads system audio levels to draw the visualiser. Nothing is recorded.";
 				// vDSP (biquad, rmsqv) in the C++ spectrum processor.
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -227,10 +227,10 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.arronlingham.VinylPod;
+				PRODUCT_BUNDLE_IDENTIFIER = com.arronlingham.Cadence;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "Sources/VinylPod-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Sources/Cadence-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -240,7 +240,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = VinylPod.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Cadence.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -249,10 +249,10 @@
 				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSAppleEventsUsageDescription = "VinylPod controls Music, Spotify and other players with Apple Events to read what is playing and to change tracks.";
-				INFOPLIST_KEY_NSAppleMusicUsageDescription = "VinylPod reads your Apple Music library to fetch animated album artwork for the track you are playing.";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Cadence controls Music, Spotify and other players with Apple Events to read what is playing and to change tracks.";
+				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Cadence reads your Apple Music library to fetch animated album artwork for the track you are playing.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "GPL-3.0. Derived from Anchor, Atoll and boring.notch.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "VinylPod reads system audio levels to draw the visualiser. Nothing is recorded.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Cadence reads system audio levels to draw the visualiser. Nothing is recorded.";
 				// vDSP (biquad, rmsqv) in the C++ spectrum processor.
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -264,10 +264,10 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.arronlingham.VinylPod;
+				PRODUCT_BUNDLE_IDENTIFIER = com.arronlingham.Cadence;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "Sources/VinylPod-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Sources/Cadence-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -275,7 +275,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		7E0000000000000000000151 /* Build configuration list for PBXProject "VinylPod" */ = {
+		7E0000000000000000000151 /* Build configuration list for PBXProject "Cadence" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7E0000000000000000000171 /* Debug */,
@@ -284,7 +284,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7E0000000000000000000111 /* Build configuration list for PBXNativeTarget "VinylPod" */ = {
+		7E0000000000000000000111 /* Build configuration list for PBXNativeTarget "Cadence" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7E0000000000000000000181 /* Debug */,

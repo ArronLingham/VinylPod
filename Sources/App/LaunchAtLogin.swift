@@ -1,6 +1,6 @@
 /*
- * VinylPod
- * Copyright (C) 2026 VinylPod Contributors
+ * Cadence
+ * Copyright (C) 2026 Cadence Contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 import ServiceManagement
 import SwiftUI
 
-/// Start VinylPod when the user logs in.
+/// Start Cadence when the user logs in.
 ///
 /// `SMAppService.mainApp`, not a `LaunchAtLogin` package and not a login-item
 /// helper bundle: the modern API needs no extra target, no helper to keep in

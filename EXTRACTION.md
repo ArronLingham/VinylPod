@@ -121,7 +121,7 @@ counting intact.
 Anchor derives from boring.notch and Atoll, both **GPL-3.0**. Every file here
 carries that header. Copying them into a new app and distributing it triggers
 copyleft: the new app must be GPL-3.0 with source available. Anchor stays
-private precisely to keep that dormant. A closed-source "VinylPod" built on
+private precisely to keep that dormant. A closed-source "Cadence" built on
 this code is not an option — either keep it private too, ship it GPL-3.0, or
 rewrite the parts you want from scratch without reading these files.
 

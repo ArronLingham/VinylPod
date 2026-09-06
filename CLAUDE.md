@@ -1,4 +1,4 @@
-# VinylPod
+# Cadence
 
 A native macOS music player. One playback core drives **four independent
 surfaces** — a lock-screen widget, a lock-screen full-screen player, a launcher
@@ -8,7 +8,7 @@ layout that the user composes by hand.
 Built from music code extracted out of [Anchor](https://github.com/ArronLingham/Anchor)
 (private). Developed standalone, then folded back into Anchor once mature. That
 end state is the reason for several decisions here: shared types stay
-Anchor-compatible, and nothing depends on a VinylPod-only process.
+Anchor-compatible, and nothing depends on a Cadence-only process.
 
 ## How to work with me
 
@@ -67,7 +67,7 @@ A now-playing widget living in Anchor's Option+Space launcher.
   around the vinyl optional.
 - **Clicking it opens the player.**
 
-VinylPod has no launcher of its own, so this surface is **built now and wired up
+Cadence has no launcher of its own, so this surface is **built now and wired up
 at Anchor integration**. Build it against the same engine and the same layout
 slot as everything else; the only missing piece is the host.
 
@@ -292,7 +292,7 @@ stricter licence.
 ## Source layout
 
 ```
-VinylPod/
+Cadence/
   Sources/
     Core/            MusicManager, PlaybackState, MediaChecker      (the model)
     MediaControllers/  five sources + Spotify auth
@@ -375,7 +375,7 @@ files.
   the five-step context menu do nothing. Fix when that view is converted.
 - **`MusicManager` still calls `AnchorViewCoordinator` at :1199-1201.** Two
   sneak-peek lines into Anchor's notch, which does not exist here. **Done** —
-  it posts `.vinylPodTrackDidChange` instead, and nothing observes that yet.
+  it posts `.cadenceTrackDidChange` instead, and nothing observes that yet.
 
 ### And the meta-lesson from Anchor, which applies to every feature here
 
@@ -427,7 +427,7 @@ could not fail.
 | `tests/run_gridsolver_tests.sh` | **93 assertions**, compiling the real `Sources/Layout/*.swift` |
 | `tests/run_runtime_stress.sh` | **live** — hostile settings and malformed layouts against the running app |
 | `scripts/audit-reachability.sh` | dead switches, unreachable settings, orphaned notifications, undrawn elements |
-| `scripts/check-debug-hooks.sh` | asserts `VINYLPOD_*` is absent from Release **and present in Debug** |
+| `scripts/check-debug-hooks.sh` | asserts `CADENCE_*` is absent from Release **and present in Debug** |
 | `scripts/measure.sh` | CPU and RSS |
 
 Run the reachability audit after adding a setting, an element or a notification.
@@ -439,7 +439,7 @@ decision, not a formality.
 ## Build
 
 ```bash
-xcodebuild -project VinylPod.xcodeproj -scheme VinylPod \
+xcodebuild -project Cadence.xcodeproj -scheme Cadence \
   -configuration Debug -destination 'platform=macOS,arch=arm64' \
   CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM="" \
   PROVISIONING_PROFILE_SPECIFIER="" build
@@ -459,7 +459,7 @@ bring it across.
 ## Measuring
 
 ```bash
-scripts/measure.sh VinylPod 180 "<label>"
+scripts/measure.sh Cadence 180 "<label>"
 ```
 
 - **Let it run 12+ minutes before believing any RSS figure.** Anchor recorded
@@ -486,9 +486,9 @@ go red. A harness that cannot fail is worse than none.
 
 ## Anchor integration (the end state)
 
-VinylPod folds back into Anchor once mature. To keep that cheap:
+Cadence folds back into Anchor once mature. To keep that cheap:
 
-- Keep `PlayerElement`, `SurfaceLayout` and `GridSolver` free of VinylPod-only
+- Keep `PlayerElement`, `SurfaceLayout` and `GridSolver` free of Cadence-only
   types, so Anchor's notch player becomes a fifth surface rather than a rewrite.
 - The launcher widget targets Anchor's `WidgetCard` shell
   (`minWidth: 108, minHeight: 62`, `.regularMaterial`, 14pt radius) and replaces
@@ -503,4 +503,4 @@ there will be two lock-screen panels competing for the same space:
 defaults write com.arronlingham.Anchor enableLockScreenMediaWidget -bool false
 ```
 
-The same applies to `enableVinylWidget` once VinylPod's desktop player works.
+The same applies to `enableVinylWidget` once Cadence's desktop player works.

@@ -1,6 +1,6 @@
 /*
- * VinylPod
- * Copyright (C) 2026 VinylPod Contributors
+ * Cadence
+ * Copyright (C) 2026 Cadence Contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import Foundation
 /// They share the playback core and this layout engine, and **nothing else**.
 /// A change to one surface's layout must never move an element on another. This
 /// is the requirement most likely to get broken by a convenient shortcut,
-/// because the code VinylPod was extracted from does the opposite: Anchor keeps
+/// because the code Cadence was extracted from does the opposite: Anchor keeps
 /// one global `musicControlSlots` array that every surface reads.
 public enum PlayerSurface: String, CaseIterable, Codable, Sendable {
     /// The free-floating desktop widget. Mouse-resizable, hover-reveals,
@@ -37,7 +37,7 @@ public enum PlayerSurface: String, CaseIterable, Codable, Sendable {
     /// The lock-screen full-screen player.
     case lockFull
     /// The now-playing card in Anchor's launcher. Built here, wired up at
-    /// Anchor integration — VinylPod has no launcher of its own.
+    /// Anchor integration — Cadence has no launcher of its own.
     case launcher
 
     public var displayName: String {

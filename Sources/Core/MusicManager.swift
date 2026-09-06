@@ -586,7 +586,7 @@ class MusicManager: ObservableObject {
     init() {
         // Listen for changes to the default controller preference
         // Was `NotificationCenter.publisher(for: .mediaControllerChanged)`.
-        // Nothing in VinylPod posts that name — in Anchor the poster lived in
+        // Nothing in Cadence posts that name — in Anchor the poster lived in
         // the settings pane, which was not extracted — so the source picker
         // changed the stored value and nothing acted on it. Observing the key
         // directly cannot come apart from the control that writes it.
@@ -1220,7 +1220,7 @@ class MusicManager: ObservableObject {
         }
     }
 
-    /// Anchor peeked the notch open on a track change. VinylPod has no notch,
+    /// Anchor peeked the notch open on a track change. Cadence has no notch,
     /// so this posts instead and each surface decides what to do with it — the
     /// desktop widget may flash, the lock screen may not care.
     ///
@@ -1230,7 +1230,7 @@ class MusicManager: ObservableObject {
     /// add when a surface wants it — not this call.
     private func updateSneakPeek() {
         guard isPlaying, Defaults[.enableSneakPeek] else { return }
-        NotificationCenter.default.post(name: .vinylPodTrackDidChange, object: nil)
+        NotificationCenter.default.post(name: .cadenceTrackDidChange, object: nil)
     }
 
     // MARK: - Public Methods for controlling playback

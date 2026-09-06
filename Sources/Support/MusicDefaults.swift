@@ -38,7 +38,7 @@ extension Defaults.Keys {
 
     static let accentColor = Key<Color>("accentColor", default: Color.blue)
 
-    // MARK: - VinylPod's own keys
+    // MARK: - Cadence's own keys
     //
     // Everything above is inherited from Anchor. These are new, and each one is
     // read by code outside Settings before it was added -- a key nothing
@@ -76,7 +76,7 @@ extension Defaults.Keys {
         "lockFullBackground", default: .blurredArtwork)
 
     /// The launcher card. Read by `LauncherPlayerWidget`, which is built but not
-    /// reachable until VinylPod folds into Anchor -- so these two are the one
+    /// reachable until Cadence folds into Anchor -- so these two are the one
     /// pair of keys here that legitimately have no live consumer yet, and the
     /// settings pane does NOT offer them for that reason.
     static let launcherWidgetSize = Key<LauncherPlayerWidget.Size>(
@@ -97,11 +97,11 @@ extension Defaults.Keys {
     //
     // Deliberately absent, and this list is the record of why:
     //
-    //   hideNotchOption, perAppVolumeMode   Anchor concepts. VinylPod has no
+    //   hideNotchOption, perAppVolumeMode   Anchor concepts. Cadence has no
     //                                       notch and no per-app audio engine.
     //   sneakPeekStyles                     chose between two notch animations;
     //                                       MusicManager now posts
-    //                                       .vinylPodTrackDidChange instead.
+    //                                       .cadenceTrackDidChange instead.
     //   lockScreenGlassStyle,               come back in Phase 4 with the lock
     //   lockScreenGlassCustomizationMode    screen, together with their enums.
     //
@@ -110,7 +110,7 @@ extension Defaults.Keys {
 
 
     // Thirty-five keys were removed here in one pass, all of them Anchor
-    // settings for features VinylPod does not have: the notch UI, the six
+    // settings for features Cadence does not have: the notch UI, the six
     // system HUDs, the camera mirror, per-app audio, the music control window,
     // Bluetooth announcements. They came across with the extraction, nothing
     // referenced them, and every one was a switch a user could flip in a plist

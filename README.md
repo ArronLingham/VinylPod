@@ -1,4 +1,4 @@
-# VinylPod
+# Cadence
 
 A native macOS music player. One playback core drives four surfaces — a
 lock-screen widget, a lock-screen full-screen player, a launcher widget and a
@@ -13,7 +13,7 @@ hand from the same set of elements.
 
 ## The idea
 
-Most now-playing widgets give you one fixed arrangement. VinylPod gives you a
+Most now-playing widgets give you one fixed arrangement. Cadence gives you a
 **snap grid** per surface and 24 placeable elements — artwork, title, artist,
 album, transport, shuffle, repeat, seek, progress bar, elapsed and remaining
 time, lyrics, output device, AirPlay, volume, visualiser, app icon, explicit
@@ -41,7 +41,7 @@ Now Playing (every app), Apple Music, Spotify, YouTube Music, Amazon Music.
 ## Building
 
 ```bash
-xcodebuild -project VinylPod.xcodeproj -scheme VinylPod -configuration Release \
+xcodebuild -project Cadence.xcodeproj -scheme Cadence -configuration Release \
   -destination 'platform=macOS,arch=arm64' build
 ```
 
@@ -62,7 +62,7 @@ Idle cost, Release, after a 13-minute settle: **0.01% CPU, median 0.00, 12.5 MB*
 
 ## Licence
 
-GPL-3.0. VinylPod derives from Anchor, itself derived from Atoll and
+GPL-3.0. Cadence derives from Anchor, itself derived from Atoll and
 boring.notch; the audio spectrum processor derives from rtaudio and FineTune.
 See `LICENSE` and `NOTICE` — the copyright headers on ported files are preserved
 as the GPL requires.

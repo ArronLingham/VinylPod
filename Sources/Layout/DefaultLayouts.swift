@@ -1,6 +1,6 @@
 /*
- * VinylPod
- * Copyright (C) 2026 VinylPod Contributors
+ * Cadence
+ * Copyright (C) 2026 Cadence Contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -383,7 +383,7 @@ extension SurfaceLayout {
     ///
     /// Anchor's current launcher widget has no transport at all, because the
     /// launcher dismisses on tap and a button you cannot press is worse than no
-    /// button. VinylPod's opens the desktop player instead of dismissing, so
+    /// button. Cadence's opens the desktop player instead of dismissing, so
     /// transport is worth having here.
     public static let defaultLauncher = SurfaceLayout(
         geometry: GridGeometry(columns: 4, contentScale: 0.82),

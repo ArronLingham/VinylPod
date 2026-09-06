@@ -1,6 +1,6 @@
 /*
- * VinylPod
- * Copyright (C) 2026 VinylPod Contributors
+ * Cadence
+ * Copyright (C) 2026 Cadence Contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ import Defaults
 ///
 /// This is the ~60 useful lines of Anchor's `LockScreenManager`. The rest of
 /// that file orchestrates weather, timer, reminder and live-activity widgets
-/// that VinylPod does not have.
+/// that Cadence does not have.
 @MainActor
 final class LockScreenManager: ObservableObject {
     static let shared = LockScreenManager()

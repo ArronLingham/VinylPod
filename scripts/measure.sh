@@ -2,7 +2,7 @@
 # Sample a running process's CPU and RSS.
 #
 #   scripts/measure.sh <process-name> <seconds> [label]
-#   scripts/measure.sh VinylPod 180 "claude-usage-watcher"
+#   scripts/measure.sh Cadence 180 "claude-usage-watcher"
 #
 # Two things this gets right that a naive `ps %cpu` loop does not:
 #

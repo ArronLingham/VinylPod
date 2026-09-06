@@ -4,7 +4,7 @@
 # This project inherits a specific failure mode from Anchor, which shipped it
 # repeatedly: code that is written, correct and tested, but that no user can
 # ever reach. It never fails a build and never throws — there is simply nothing
-# to find. VinylPod's own adversarial review turned up six instances in one
+# to find. Cadence's own adversarial review turned up six instances in one
 # pass, including two notifications that were observed and never posted.
 #
 # Four checks, each for a shape that has actually occurred here:
@@ -61,7 +61,7 @@ for key in $keys; do
             waitInterval)
                 ;;
             # Vestigial from the extraction. Read by AnchorAnimations, which
-            # MusicManager still holds, but VinylPod has no notch to animate.
+            # MusicManager still holds, but Cadence has no notch to animate.
             # Left rather than deleted so the file folds back into Anchor.
             notchAnimationProfile)
                 ;;

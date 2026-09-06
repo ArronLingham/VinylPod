@@ -1,6 +1,6 @@
 /*
- * VinylPod
- * Copyright (C) 2026 VinylPod Contributors
+ * Cadence
+ * Copyright (C) 2026 Cadence Contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 
     /// Shows the launcher card in a window of its own.
     ///
-    /// `LauncherPlayerWidget` is the one surface with no host: VinylPod has no
+    /// `LauncherPlayerWidget` is the one surface with no host: Cadence has no
     /// launcher, and it is wired in at Anchor integration. That left it built,
     /// committed, and **never once rendered** — the exact shape of "complete but
     /// unreachable" this project keeps recording, except self-inflicted.
@@ -33,14 +33,14 @@
     /// variable said so. `scripts/check-debug-hooks.sh` asserts it is gone from
     /// Release.
     ///
-    ///     VINYLPOD_PREVIEW_LAUNCHER=1 open -n VinylPod.app
-    ///     VINYLPOD_PREVIEW_LAUNCHER=hover open -n VinylPod.app
+    ///     CADENCE_PREVIEW_LAUNCHER=1 open -n Cadence.app
+    ///     CADENCE_PREVIEW_LAUNCHER=hover open -n Cadence.app
     @MainActor
     enum LauncherPreview {
         private static var window: NSWindow?
 
         static func showIfRequested() {
-            guard let mode = ProcessInfo.processInfo.environment["VINYLPOD_PREVIEW_LAUNCHER"]
+            guard let mode = ProcessInfo.processInfo.environment["CADENCE_PREVIEW_LAUNCHER"]
             else { return }
 
             // The strip Anchor puts this in has a dark HUD backing, so previewing

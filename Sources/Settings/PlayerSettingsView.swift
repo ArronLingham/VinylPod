@@ -1,6 +1,6 @@
 /*
- * VinylPod
- * Copyright (C) 2026 VinylPod Contributors
+ * Cadence
+ * Copyright (C) 2026 Cadence Contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ struct PlayerSettingsView: View {
         Form {
             Section("General") {
                 Toggle(
-                    "Open VinylPod at login",
+                    "Open Cadence at login",
                     isOn: Binding(
                         get: { launchAtLogin.isEnabled },
                         set: { launchError = launchAtLogin.set($0) }))

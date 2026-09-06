@@ -1,6 +1,6 @@
 /*
- * VinylPod
- * Copyright (C) 2026 VinylPod Contributors
+ * Cadence
+ * Copyright (C) 2026 Cadence Contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ import SwiftUI
 
 /// Owns the settings window.
 ///
-/// VinylPod used a SwiftUI `Settings` scene and drove it with
+/// Cadence used a SwiftUI `Settings` scene and drove it with
 /// `NSApp.sendAction(Selector(("showSettingsWindow:")))`. That did nothing:
 /// the app is `LSUIElement`, so there is no key window and the action found no
 /// responder — pressing Settings in the menu produced no window and no error,
@@ -49,7 +49,7 @@ final class SettingsWindowController {
                 contentRect: NSRect(x: 0, y: 0, width: 820, height: 640),
                 styleMask: [.titled, .closable, .miniaturizable, .resizable],
                 backing: .buffered, defer: false)
-            created.title = "VinylPod"
+            created.title = "Cadence"
             created.isReleasedWhenClosed = false
             created.center()
             created.contentView = NSHostingView(rootView: SettingsRootView())
@@ -60,7 +60,7 @@ final class SettingsWindowController {
     }
 }
 
-/// Drops back to accessory when the window closes, so VinylPod leaves the Dock
+/// Drops back to accessory when the window closes, so Cadence leaves the Dock
 /// and the menu bar again rather than sitting there like an ordinary app.
 @MainActor
 final class SettingsWindowDelegate: NSObject, NSWindowDelegate {

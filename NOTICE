@@ -1,6 +1,6 @@
-VinylPod - NOTICE
+Cadence - NOTICE
 
-VinylPod is a macOS music player built from source extracted out of Anchor,
+Cadence is a macOS music player built from source extracted out of Anchor,
 which is a personal fork of Atoll (DynamicIsland), which is itself derived from
 boring.notch. It is not affiliated with or endorsed by the Atoll or boring.notch
 projects.
@@ -10,7 +10,7 @@ The derivation chain, in full:
     boring.notch          GPL-3.0   https://github.com/TheBoredTeam/boring.notch
       -> Atoll (DynamicIsland)  GPL-3.0
         -> Anchor           GPL-3.0 (private)
-          -> VinylPod       GPL-3.0 (this project)
+          -> Cadence       GPL-3.0 (this project)
 
 Every file carried across retains its original copyright header
 ("Copyright (C) 2024-2026 Atoll Contributors") as the GPL requires. Only the
@@ -30,7 +30,7 @@ attribution, which the file headers state and which is reproduced here:
     Modified work Copyright (C) 2026 Atoll Contributors
 
 Anchor's per-app audio engine derives from FineTune. None of that engine is
-part of VinylPod today, but the header conventions and the DSP approach in the
+part of Cadence today, but the header conventions and the DSP approach in the
 visualiser path share its lineage:
 
     FineTune
@@ -40,7 +40,7 @@ visualiser path share its lineage:
 
 ---
 
-VinylPod uses the following third-party packages, each under its own licence:
+Cadence uses the following third-party packages, each under its own licence:
 
     Defaults          MIT     https://github.com/sindresorhus/Defaults
     SkyLightWindow    MIT     https://github.com/Lakr233/SkyLightWindow

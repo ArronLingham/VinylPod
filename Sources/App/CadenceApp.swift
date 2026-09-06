@@ -1,5 +1,5 @@
 /*
- * VinylPod
+ * Cadence
  * Derived from Anchor, itself derived from Atoll (DynamicIsland) and boring.notch.
  * Copyright (C) 2024-2026 Atoll Contributors
  *
@@ -24,15 +24,15 @@ import SwiftUI
 extension Notification.Name {
     /// Posted when playback moves to a different track. Surfaces observe this
     /// if they want to react; nothing observes it yet, which is deliberate.
-    static let vinylPodTrackDidChange = Notification.Name("VinylPod.trackDidChange")
+    static let cadenceTrackDidChange = Notification.Name("Cadence.trackDidChange")
 }
 
 @main
-struct VinylPodApp: App {
+struct CadenceApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
 
     var body: some Scene {
-        // No WindowGroup and no Settings scene: VinylPod is LSUIElement, so
+        // No WindowGroup and no Settings scene: Cadence is LSUIElement, so
         // there is no key window for `showSettingsWindow:` to reach and the
         // action silently found no responder. `SettingsWindowController` owns
         // an ordinary NSWindow instead. This empty scene exists only because
@@ -73,7 +73,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func setUpStatusItem() {
         statusItem.button?.image = NSImage(
-            systemSymbolName: "opticaldisc.fill", accessibilityDescription: "VinylPod")
+            systemSymbolName: "opticaldisc.fill", accessibilityDescription: "Cadence")
         statusItem.menu = makeMenu()
     }
 
@@ -87,7 +87,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             withTitle: "Settings…", action: #selector(openSettings), keyEquivalent: ",").target = self
         menu.addItem(.separator())
         menu.addItem(
-            withTitle: "Quit VinylPod", action: #selector(NSApplication.terminate(_:)),
+            withTitle: "Quit Cadence", action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q")
         menu.delegate = self
         return menu

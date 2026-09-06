@@ -28,18 +28,18 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
-DOMAIN=com.arronlingham.VinylPod
-APP=$(find ~/Library/Developer/Xcode/DerivedData/VinylPod-*/Build/Products/Debug \
-      -maxdepth 1 -name 'VinylPod.app' 2>/dev/null | head -1)
+DOMAIN=com.arronlingham.Cadence
+APP=$(find ~/Library/Developer/Xcode/DerivedData/Cadence-*/Build/Products/Debug \
+      -maxdepth 1 -name 'Cadence.app' 2>/dev/null | head -1)
 [ -n "$APP" ] || { echo "no Debug build — build it first"; exit 1; }
 
-BACKUP=$(mktemp -t vinylpod-prefs).plist
+BACKUP=$(mktemp -t cadence-prefs).plist
 CRASHES=~/Library/Logs/DiagnosticReports
 
 restore() {
     echo
     echo "restoring your settings"
-    pkill -x VinylPod 2>/dev/null
+    pkill -x Cadence 2>/dev/null
     defaults delete "$DOMAIN" 2>/dev/null
     if [ -s "$BACKUP" ]; then defaults import "$DOMAIN" "$BACKUP" 2>/dev/null; fi
     rm -f "$BACKUP"
@@ -47,16 +47,16 @@ restore() {
 trap restore EXIT
 
 defaults export "$DOMAIN" "$BACKUP" 2>/dev/null || true
-crashes_before=$(ls "$CRASHES" 2>/dev/null | grep -c VinylPod || true)
+crashes_before=$(ls "$CRASHES" 2>/dev/null | grep -c Cadence || true)
 
 launch() {
-    pkill -x VinylPod 2>/dev/null
-    while pgrep -x VinylPod >/dev/null; do sleep 0.2; done
+    pkill -x Cadence 2>/dev/null
+    while pgrep -x Cadence >/dev/null; do sleep 0.2; done
     open -n "$APP"
-    for _ in $(seq 1 40); do pgrep -x VinylPod >/dev/null && break; sleep 0.25; done
+    for _ in $(seq 1 40); do pgrep -x Cadence >/dev/null && break; sleep 0.25; done
 }
 
-alive() { pgrep -x VinylPod >/dev/null; }
+alive() { pgrep -x Cadence >/dev/null; }
 
 failures=0
 check() {  # name
@@ -141,11 +141,11 @@ check "240 boolean flips against a running app"
 
 # ---------------------------------------------------------------------------
 echo
-crashes_after=$(ls "$CRASHES" 2>/dev/null | grep -c VinylPod || true)
+crashes_after=$(ls "$CRASHES" 2>/dev/null | grep -c Cadence || true)
 new_crashes=$((crashes_after - crashes_before))
 echo "crash reports written during this run: $new_crashes"
 if [ "$new_crashes" -gt 0 ]; then
-    ls -t "$CRASHES" | grep VinylPod | head -3 | sed 's/^/  /'
+    ls -t "$CRASHES" | grep Cadence | head -3 | sed 's/^/  /'
     failures=$((failures + new_crashes))
 fi
 

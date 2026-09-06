@@ -1,6 +1,6 @@
 /*
- * VinylPod
- * Copyright (C) 2026 VinylPod Contributors
+ * Cadence
+ * Copyright (C) 2026 Cadence Contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ import SwiftUI
 
 /// The now-playing card for Anchor's Option+Space launcher.
 ///
-/// **Not reachable inside VinylPod**, which has no launcher. It is built now,
+/// **Not reachable inside Cadence**, which has no launcher. It is built now,
 /// against the same engine as everything else, so that wiring it up at Anchor
 /// integration is a matter of placing this view in `LauncherWidgetStrip` rather
 /// than writing a fifth player.
@@ -30,7 +30,7 @@ import SwiftUI
 /// It replaces `LauncherVinylWidget`, which draws a static 38pt circle that does
 /// not spin and carries no transport. Anchor's reason for that is recorded and
 /// was good: the launcher dismisses on tap, so a button you press vanishes
-/// before it does anything. VinylPod's card **opens the desktop player** instead
+/// before it does anything. Cadence's card **opens the desktop player** instead
 /// of dismissing, which is what makes transport worth having.
 struct LauncherPlayerWidget: View {
     /// Anchor's `WidgetCard` is `minWidth: 108, minHeight: 62`. These are the
