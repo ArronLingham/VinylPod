@@ -154,16 +154,36 @@ extension Defaults.Keys {
     /// directory listing of `/Applications`.
     static var defaultMediaController: MediaControllerType {
         let workspace = NSWorkspace.shared
+        func running(_ bundleID: String) -> Bool {
+            !workspace.runningApplications.filter { $0.bundleIdentifier == bundleID }.isEmpty
+        }
         func installed(_ bundleID: String) -> Bool {
             workspace.urlForApplication(withBundleIdentifier: bundleID) != nil
         }
+
+        // What is actually RUNNING wins. Anchor returns .appleMusic
+        // unconditionally on 15.4+ and relies on the user picking their player
+        // in settings, which is fine once they have — but the first launch
+        // points at the wrong app, and the symptom is not obviously a settings
+        // problem: the player shows "Not Playing / Unknown / Unknown" over the
+        // last cover Music happened to have, which reads as a broken player
+        // rather than as the wrong source.
+        //
+        // An earlier version of this checked *installed* instead, which was no
+        // better than Anchor's: Music.app ships with macOS, so it always won.
+        for (bundleID, type) in [
+            ("com.spotify.client", MediaControllerType.spotify),
+            ("com.apple.Music", .appleMusic),
+            ("com.amazon.music", .amazonMusic),
+        ] where running(bundleID) {
+            return type
+        }
+
         if #available(macOS 15.4, *) {
+            // Nothing playing yet. `.nowPlaying` would cover whatever they open
+            // next, but Apple removed the private API it needs in 15.4.
             if installed("com.apple.Music") { return .appleMusic }
             if installed("com.spotify.client") { return .spotify }
-            if installed("com.amazon.music") { return .amazonMusic }
-            // Nothing recognised is installed. `.nowPlaying` will not work on
-            // this OS either, but it is the one that covers any app the user
-            // installs later without them having to find this setting.
             return .nowPlaying
         }
         return .nowPlaying

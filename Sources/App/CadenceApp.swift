@@ -19,6 +19,7 @@
 
 import AppKit
 import Combine
+import Defaults
 import SwiftUI
 
 extension Notification.Name {
@@ -53,9 +54,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Everything below is `lazy` for that reason. Keep it that way, and defer
     /// blocking work in any new manager's `init` with `DispatchQueue.main.async`.
     private lazy var statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+    private var cancellables = Set<AnyCancellable>()
+
+    /// `.regular` puts Cadence in the Dock and ⌘Tab; `.accessory` keeps it to
+    /// the menu bar. The settings window promotes to `.regular` while it is
+    /// open regardless, because an accessory app cannot be raised by clicking
+    /// it, and drops back on close — so this is the resting state, not an
+    /// absolute.
+    static func applyActivationPolicy() {
+        NSApp.setActivationPolicy(Defaults[.showInDock] ? .regular : .accessory)
+    }
+
+    func applyActivationPolicy() { AppDelegate.applyActivationPolicy() }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
+        // `.accessory` means no Dock icon and no ⌘Tab entry — the normal shape
+        // for a menu-bar app, and the reason Cadence has no Dock icon by
+        // default. It is a setting now rather than a hardcoded policy.
+        applyActivationPolicy()
+        Defaults.publisher(.showInDock, options: [])
+            .sink { _ in
+                MainActor.assumeIsolated { AppDelegate.applyActivationPolicy() }
+            }
+            .store(in: &cancellables)
         setUpStatusItem()
         // Touching `shared` builds it; its `init` wires the controllers.
         // Deferred off the launch path because `init` reaches AppleScript and

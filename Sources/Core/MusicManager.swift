@@ -1197,9 +1197,18 @@ class MusicManager: ObservableObject {
     // MARK: - Playback Position Estimation
     /// Whether a real track is known.
     ///
-    /// The title is the signal because every controller sets it first and none
-    /// reports an untitled track.
-    public var hasTrack: Bool { !songTitle.isEmpty }
+    /// Delegates to `hasActiveSession`, which Anchor already had and which I
+    /// failed to use — writing a second, worse version of it instead. Anchor's
+    /// trims and lowercases before comparing and checks the artist as well as
+    /// the title, so a controller that fills one field and not the other still
+    /// counts as playing.
+    ///
+    /// This is what "the player is glitching" was: every AppleScript controller
+    /// substitutes a placeholder when its player has nothing loaded — Apple
+    /// Music returns "Not Playing", Spotify and Amazon return "Unknown" — so an
+    /// idle player produced a title, artist and album that all looked like a
+    /// real track, over whatever cover was last fetched.
+    public var hasTrack: Bool { hasActiveSession }
 
     public func estimatedPlaybackPosition(at date: Date = Date()) -> TimeInterval {
         guard isPlaying else { return min(elapsedTime, songDuration) }

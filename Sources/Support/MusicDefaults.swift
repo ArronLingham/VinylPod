@@ -65,6 +65,13 @@ extension Defaults.Keys {
     /// simply has to fit in the resting frame.
     static let hoverGrowsWidget = Key<Bool>("hoverGrowsWidget", default: true)
 
+    /// Show Cadence in the Dock and the ⌘Tab switcher.
+    ///
+    /// Off by default because a menu-bar music player that occupies a Dock slot
+    /// all day is a nuisance — but that is a taste, not a law, and it was
+    /// previously hardcoded as `.accessory` with no way to change it.
+    static let showInDock = Key<Bool>("showInDock", default: false)
+
     /// The small lock-screen widget. Off by default: it draws over the lock
     /// screen through a private SkyLight API, which is not something to switch
     /// on for someone without their say-so.

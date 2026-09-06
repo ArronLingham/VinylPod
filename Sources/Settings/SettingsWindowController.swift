@@ -67,6 +67,9 @@ final class SettingsWindowDelegate: NSObject, NSWindowDelegate {
     static let shared = SettingsWindowDelegate()
 
     func windowWillClose(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
+        // Back to whatever the user asked for, not unconditionally accessory —
+        // otherwise turning the Dock icon on and then closing Settings would
+        // silently take it away again.
+        AppDelegate.applyActivationPolicy()
     }
 }

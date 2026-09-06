@@ -36,6 +36,7 @@ struct PlayerSettingsView: View {
     @Default(.mediaController) private var source
     @Default(.lockWidgetVerticalOffset) private var lockOffset
     @Default(.enableLyrics) private var lyricsEnabled
+    @Default(.showInDock) private var showInDock
     @StateObject private var launchAtLogin = LaunchAtLogin.shared
     @State private var launchError: String?
     @Default(.visualizerBarCount) private var visualizerBars
@@ -58,6 +59,9 @@ struct PlayerSettingsView: View {
                     isOn: Binding(
                         get: { launchAtLogin.isEnabled },
                         set: { launchError = launchAtLogin.set($0) }))
+                Toggle("Show in the Dock", isOn: $showInDock)
+                Text("Off by default: Cadence lives in the menu bar. Turning this on also puts it in the ⌘Tab switcher.")
+                    .font(.caption).foregroundStyle(.secondary)
                 if let launchError {
                     Text(launchError).font(.caption).foregroundStyle(.red)
                 } else {

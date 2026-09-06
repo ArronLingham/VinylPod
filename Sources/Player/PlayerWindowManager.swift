@@ -344,8 +344,13 @@ private struct PlayerRootView: View {
             set: { Defaults[.hoverGrowsWidget] = $0 }))
         Divider()
         Button("Player settings…") {
-            NSApp.activate(ignoringOtherApps: true)
-            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+            // Through SettingsWindowController, like the menu bar item. This
+            // was still calling `showSettingsWindow:`, which finds no responder
+            // in an LSUIElement app — so right-clicking the player and choosing
+            // Player settings did nothing at all. The menu bar path was fixed
+            // and this one was missed, which is the hazard of having two doors
+            // to the same room.
+            SettingsWindowController.shared.show()
         }
     }
 }
