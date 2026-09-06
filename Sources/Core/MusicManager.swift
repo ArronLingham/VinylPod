@@ -590,9 +590,8 @@ class MusicManager: ObservableObject {
         // the settings pane, which was not extracted — so the source picker
         // changed the stored value and nothing acted on it. Observing the key
         // directly cannot come apart from the control that writes it.
-        Defaults.publisher(.mediaController).map { _ in () }
-            .eraseToAnyPublisher()
-            .map { Notification(name: .mediaControllerChanged) }
+        Defaults.publisher(.mediaController)
+            .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 self?.isPearDesktopAutoSwitched = false
                 self?.setActiveControllerBasedOnPreference()

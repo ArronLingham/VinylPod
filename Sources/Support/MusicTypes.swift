@@ -180,7 +180,4 @@ extension Notification.Name {
     /// the same name from either.
     static let systemAudioRouteDidChange = Notification.Name("Anchor.systemAudioRouteDidChange")
 
-    /// Posted when the user picks a different playback source. Declared in
-    /// Anchor's `Models/Constants.swift:284`.
-    static let mediaControllerChanged = Notification.Name("mediaControllerChanged")
 }

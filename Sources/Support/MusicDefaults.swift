@@ -6,54 +6,21 @@ import Foundation
 import SwiftUI
 
 extension Defaults.Keys {
-    static let autoHideInactiveNotchMediaPlayer = Key<Bool>("autoHideInactiveNotchMediaPlayer", default: true)
-    static let cameraMirrorDeviceID = Key<String>("cameraMirrorDeviceID", default: "")
     static let coloredSpectrogram = Key<Bool>("coloredSpectrogram", default: true)
     static let colorExtractionMode = Key<ColorExtractionMode>("colorExtractionMode", default: .vibrant)
     static let didClearLegacyURLCacheV1 = Key<Bool>("didClearLegacyURLCacheV1", default: false)
-    static let enableBrightnessHUD = Key<Bool>("enableBrightnessHUD", default: true)
-    static let enableCameraMirror = Key<Bool>("enableCameraMirror", default: false)
-    static let enableCircularHUD = Key<Bool>("enableCircularHUD", default: false)
-    static let enableCustomOSD = Key<Bool>("enableCustomOSD", default: false)
-    static let enableFullscreenMediaDetection = Key<Bool>("enableFullscreenMediaDetection", default: true)
     static let enableHorizontalMusicGestures = Key<Bool>("enableHorizontalMusicGestures", default: true)
-    static let enableKeyboardBacklightHUD = Key<Bool>("enableKeyboardBacklightHUD", default: true)
-    static let enableLockScreenMediaWidget = Key<Bool>("enableLockScreenMediaWidget", default: true)
     static let enableLyrics = Key<Bool>("enableLyrics", default: false)
-    static let enableMinimalisticUI = Key<Bool>("enableMinimalisticUI", default: false)
-    static let enablePerAppAudio = Key<Bool>("enablePerAppAudio", default: false)
     static let enableRealTimeWaveform = Key<Bool>("enableRealTimeWaveform", default: false)
-    static let enableReminderLiveActivity = Key<Bool>("enableReminderLiveActivity", default: true)
     static let enableSneakPeek = Key<Bool>("enableSneakPeek", default: false)
-    static let enableSystemHUD = Key<Bool>("enableSystemHUD", default: true)
-    static let enableVerticalHUD = Key<Bool>("enableVerticalHUD", default: false)
-    static let enableVolumeHUD = Key<Bool>("enableVolumeHUD", default: true)
-    static let enableWaveformScrubber = Key<Bool>("enableWaveformScrubber", default: true)
-    static let lightingEffect = Key<Bool>("lightingEffect", default: true)
-    static let lockScreenMusicAlbumParallaxEnabled = Key<Bool>("lockScreenMusicAlbumParallaxEnabled", default: false)
-    static let lockScreenMusicFullscreenArtworkEnabled = Key<Bool>("lockScreenMusicFullscreenArtworkEnabled", default: true)
     static let lockScreenMusicFullscreenVideoArtwork = Key<Bool>("lockScreenMusicFullscreenVideoArtwork", default: true)
-    static let lockScreenUseArtworkLayoutOverFullscreenCanvas = Key<Bool>("lockScreenShowCenteredAlbumArtOverFullscreenCanvas", default: true)
     static let lyricsOffsetSeconds = Key<Double>("lyricsOffsetSeconds", default: 0.2)
     static let lyricsTranslationEnabled = Key<Bool>("lyricsTranslationEnabled", default: false)
     static let lyricsVisibleLines = Key<Int>("lyricsVisibleLines", default: 0)
     static let mediaController = Key<MediaControllerType>("mediaController", default: defaultMediaController)
-    static let musicControlWindowEnabled = Key<Bool>("musicControlWindowEnabled", default: false)
     static let musicGestureBehavior = Key<MusicSkipBehavior>("musicGestureBehavior", default: .track)
     static let musicSkipBehavior = Key<MusicSkipBehavior>("musicSkipBehavior", default: .track)
-    static let parallaxEffectIntensity = Key<Double>("parallaxEffectIntensity", default: 6.0)
-    static let pinnedInputDeviceUID = Key<String>("pinnedInputDeviceUID", default: "")
-    static let playerColorTinting = Key<Bool>("playerColorTinting", default: true)
-    static let selectedVisualizer = Key<CustomVisualizer?>("selectedVisualizer", default: nil)
-    static let showAirPodsListeningModeChanges = Key<Bool>("showAirPodsListeningModeChanges", default: false)
-    static let showBluetoothDeviceConnections = Key<Bool>("showBluetoothDeviceConnections", default: true)
-    static let showLiveCanvasInDynamicIsland = Key<Bool>("showLiveCanvasInDynamicIsland", default: false)
-    static let showMediaOutputControl = Key<Bool>("showMediaOutputControl", default: true)
-    static let showMinimalisticBatteryIndicator = Key<Bool>("showMinimalisticBatteryIndicator", default: true)
-    static let showPerAppVolumeControl = Key<Bool>("showPerAppVolumeControl", default: true)
-    static let showShuffleAndRepeat = Key<Bool>("showShuffleAndRepeat", default: true)
     static let showSneakPeekOnTrackChange = Key<Bool>("showSneakPeekOnTrackChange", default: true)
-    static let showStandardMediaControls = Key<Bool>("showStandardMediaControls", default: true)
     // NB: the stored name is not the Swift name. Anchor renamed the property
     // and kept the old string so existing preferences kept working.
     static let sliderColor = Key<SliderColorEnum>(
@@ -64,8 +31,6 @@ extension Defaults.Keys {
     static let spotifyAuthAccessTokenExpiration = Key<Double>("spotifyAuthAccessTokenExpiration", default: 0)
     static let spotifyAuthLastValidatedAt = Key<Double>("spotifyAuthLastValidatedAt", default: 0)
     static let spotifySPDCCookie = Key<String>("spotifySPDCCookie", default: "")
-    static let useMusicVisualizer = Key<Bool>("useMusicVisualizer", default: true)
-    static let vinylProgressStyle = Key<VinylProgressStyle>("vinylProgressStyle", default: .bar)
     static let visualizerBarCount = Key<Int>("visualizerBarCount", default: 4)
     static let waitInterval = Key<Double>("waitInterval", default: 3)
 
@@ -142,5 +107,16 @@ extension Defaults.Keys {
     //
     // A key nothing reads is a dead switch — Anchor shipped four of them and
     // an audit was needed to find them. Add the key with the code that reads it.
+
+
+    // Thirty-five keys were removed here in one pass, all of them Anchor
+    // settings for features VinylPod does not have: the notch UI, the six
+    // system HUDs, the camera mirror, per-app audio, the music control window,
+    // Bluetooth announcements. They came across with the extraction, nothing
+    // referenced them, and every one was a switch a user could flip in a plist
+    // to no effect whatsoever.
+    //
+    // scripts/audit-reachability.sh is what found them, and running it is how
+    // to stop them coming back.
 
 }

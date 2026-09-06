@@ -38,6 +38,17 @@ struct PlayerSettingsView: View {
     @Default(.enableLyrics) private var lyricsEnabled
     @StateObject private var launchAtLogin = LaunchAtLogin.shared
     @State private var launchError: String?
+    @Default(.visualizerBarCount) private var visualizerBars
+    @Default(.coloredSpectrogram) private var colouredSpectrogram
+    @Default(.enableRealTimeWaveform) private var realTimeWaveform
+    @Default(.lyricsOffsetSeconds) private var lyricsOffset
+    @Default(.lyricsTranslationEnabled) private var translateLyrics
+    @Default(.musicSkipBehavior) private var skipBehavior
+    @Default(.spotifySPDCCookie) private var spotifyCookie
+    @Default(.lyricsVisibleLines) private var lyricLines
+    @Default(.colorExtractionMode) private var colourMode
+    @Default(.sliderColor) private var sliderColour
+    @Default(.lockScreenMusicFullscreenVideoArtwork) private var canvasVideo
 
     var body: some View {
         Form {
@@ -61,6 +72,13 @@ struct PlayerSettingsView: View {
                     ForEach(PlayerWindowLevel.allCases, id: \.self) { Text($0.label).tag($0) }
                 }
                 Toggle("Tint with the album colour", isOn: $tinted)
+                Picker("Colour taken from the artwork by", selection: $colourMode) {
+                    Text("Average").tag(ColorExtractionMode.legacy)
+                    Text("Most vibrant").tag(ColorExtractionMode.vibrant)
+                }
+                Picker("Progress bar colour", selection: $sliderColour) {
+                    ForEach(SliderColorEnum.allCases, id: \.self) { Text($0.localizedName).tag($0) }
+                }
                 HStack {
                     Text("Background")
                     Slider(value: $opacity, in: 0...1)
@@ -85,15 +103,38 @@ struct PlayerSettingsView: View {
                     Slider(value: $lockOffset, in: -240...240)
                     Text("\(Int(lockOffset))").monospacedDigit().frame(width: 42)
                 }
+                Toggle("Use Spotify Canvas video when there is one", isOn: $canvasVideo)
                 Picker("Full-screen background", selection: $lockBackground) {
                     ForEach(LockFullBackground.allCases, id: \.self) { Text($0.label).tag($0) }
                 }
+            }
+
+            Section("Elements") {
+                Picker("Skip buttons", selection: $skipBehavior) {
+                    ForEach(MusicSkipBehavior.allCases) { Text($0.displayName).tag($0) }
+                }
+                Stepper("Visualiser bars: \(visualizerBars)", value: $visualizerBars, in: 2...12)
+                Toggle("Colour the visualiser from the album", isOn: $colouredSpectrogram)
+                Toggle("Real-time waveform", isOn: $realTimeWaveform)
+                Text("Reads system audio through a CoreAudio tap, and only while a visualiser is on screen.")
+                    .font(.caption).foregroundStyle(.secondary)
             }
 
             Section("Lyrics") {
                 Toggle("Fetch lyrics", isOn: $lyricsEnabled)
                 Text("Needed by the Lyrics element. Off by default because it fetches from the network.")
                     .font(.caption).foregroundStyle(.secondary)
+                Toggle("Translate lyrics", isOn: $translateLyrics)
+                HStack {
+                    Text("Timing offset")
+                    Slider(value: $lyricsOffset, in: -2...2)
+                    Text(String(format: "%+.1fs", lyricsOffset)).monospacedDigit().frame(width: 52)
+                }
+                Text("Negative shows each line earlier. Synced lyrics are rarely perfectly aligned.")
+                    .font(.caption).foregroundStyle(.secondary)
+                Stepper(
+                    lyricLines == 0 ? "Visible lines: as many as fit" : "Visible lines: \(lyricLines)",
+                    value: $lyricLines, in: 0...9)
             }
 
             Section("Source") {
@@ -102,6 +143,11 @@ struct PlayerSettingsView: View {
                 }
                 Text("Now Playing covers every app but needs a system API Apple removed in macOS 15.4.")
                     .font(.caption).foregroundStyle(.secondary)
+                if source == .spotify {
+                    SecureField("Spotify sp_dc cookie", text: $spotifyCookie)
+                    Text("Optional. Only needed for lyrics and Canvas artwork; playback works without it. A SecureField because this is a credential.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
             }
         }
         .formStyle(.grouped)

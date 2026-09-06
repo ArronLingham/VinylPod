@@ -195,6 +195,36 @@ grep -rhoE '^import (MusicKit|EventKit|Speech|AVFoundation|Contacts|Photos|CoreL
 Debug build does not inherit them, so anything gated on a permission can only be
 tested in a signed build.
 
+## Audits
+
+`scripts/audit-reachability.sh` — run it after adding a setting, an element or a
+notification. It finds the failure this project inherits and keeps re-learning:
+code that is written, correct and tested, but that no user can reach. There is
+no build error and no exception, so nothing else catches it.
+
+Four checks, each for a shape that has actually occurred here:
+
+1. A `Defaults` key nothing outside Settings reads — a dead switch.
+2. A key no UI exposes — unreachable.
+3. A `Notification.Name` posted with no observer, or observed with no poster.
+4. A `PlayerElement` case `PlayerSurfaceView` never draws.
+
+**Its first run removed 35 keys.** All were Anchor settings for features
+VinylPod does not have — the notch UI, six system HUDs, the camera mirror,
+per-app audio, the music control window, Bluetooth announcements — that came
+across with the extraction. Every one was a switch a user could flip in a plist
+to no effect at all. It also exposed nine settings that were read by code and
+had no control, and caught `.mediaControllerChanged` still being observed after
+its poster was replaced.
+
+The allowlist in that script is the record of which keys legitimately have no
+UI, and why. Adding to it is a decision; a key that is not internal state
+belongs in the settings pane instead.
+
+**Proved non-vacuous**, all three checks: adding a key nothing reads, removing a
+renderer for a placeable element, and observing a notification nothing posts
+each make it fail.
+
 ## Findings from the adversarial review that are NOT fixed
 
 A four-agent review ran against the finished code. **Its verification pass never
