@@ -78,6 +78,15 @@ and sample metadata, and **dragging persists** — moving the Previous button
 wrote `previous` from column 1 to column 0 in `playerLayouts` and touched
 nothing else.
 
+Keyboard, all verified live against the running app:
+
+| Key | Does |
+|---|---|
+| ⌘Z / ⇧⌘Z | undo / redo, per surface, 50 deep |
+| ← → ↑ ↓ | nudge the selection one cell; refused into an occupied cell |
+| ⌫ | remove the selection |
+| esc | deselect |
+
 Worth checking by hand:
 
 - **Drag onto an occupied cell.** It must be refused, not squeezed in. A no-op

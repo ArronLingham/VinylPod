@@ -38,10 +38,26 @@ struct LayoutEditorView: View {
     @State private var selection: UUID?
     @State private var dragging: UUID?
     @State private var hoverPreview = false
+    @StateObject private var history = LayoutHistory()
+    @FocusState private var editorFocused: Bool
 
     private var layout: SurfaceLayout {
         get { layouts[surface] }
         nonmutating set { layouts[surface] = newValue }
+    }
+
+    /// The single door every edit goes through.
+    ///
+    /// Undo is only trustworthy if nothing can change a layout without
+    /// recording the prior state, so there is exactly one mutating path and the
+    /// setter above is used only by it and by undo/redo themselves.
+    private func edit(_ transform: (inout SurfaceLayout) -> Void) {
+        let before = layout
+        var updated = before
+        transform(&updated)
+        guard updated != before else { return }
+        history.record(before, for: surface)
+        layout = normalisingRows(updated)
     }
 
     var body: some View {
@@ -61,6 +77,81 @@ struct LayoutEditorView: View {
             }
         }
         .frame(minWidth: 720, minHeight: 560)
+        .focusable()
+        .focusEffectDisabled()
+        .focused($editorFocused)
+        // Focus has to be taken back deliberately. `.focusable()` alone was not
+        // enough: Cmd+Z worked on a freshly opened window and then stopped the
+        // moment anything in the preview was clicked, because the click moved
+        // focus off the root and `onKeyPress` only fires for the focused view.
+        // Selecting an element is exactly when the arrow keys become useful, so
+        // that is the moment to re-claim it.
+        .onAppear { editorFocused = true }
+        .onChange(of: selection) { _, _ in editorFocused = true }
+        .onChange(of: surface) { _, _ in editorFocused = true }
+        // Arrow keys nudge by one cell. A drag is the fast way to get roughly
+        // right; this is the only way to get exactly right, because a synthetic
+        // pointer cannot reliably hit a 42pt cell and neither can a hand.
+        .onKeyPress(.leftArrow) { nudge(dx: -1, dy: 0) }
+        .onKeyPress(.rightArrow) { nudge(dx: 1, dy: 0) }
+        .onKeyPress(.upArrow) { nudge(dx: 0, dy: -1) }
+        .onKeyPress(.downArrow) { nudge(dx: 0, dy: 1) }
+        // Backspace and forward-delete both, matched on the character rather
+        // than on `KeyEquivalent.delete` — that constant did not match what the
+        // Backspace key actually sends, so the shortcut silently did nothing
+        // while every other key in this block worked.
+        .onKeyPress(phases: .down) { press in
+            let deleteKeys: Set<Character> = ["\u{8}", "\u{7F}", "\u{F728}"]
+            guard press.characters.contains(where: { deleteKeys.contains($0) })
+            else { return .ignored }
+            return deleteSelection()
+        }
+        .onKeyPress(.escape) {
+            selection = nil
+            return .handled
+        }
+        // Both cases. With Shift held the reported character is "Z", so a set
+        // containing only "z" matched Cmd+Z and silently ignored Shift+Cmd+Z —
+        // undo worked and redo did nothing, which is exactly the sort of
+        // half-working that reads as "redo is broken" rather than as a typo.
+        .onKeyPress(keys: ["z", "Z"]) { press in
+            guard press.modifiers.contains(.command) else { return .ignored }
+            let restored =
+                press.modifiers.contains(.shift)
+                ? history.redo(surface, current: layout)
+                : history.undo(surface, current: layout)
+            guard let restored else { return .handled }
+            layout = restored
+            if !layout.placements.contains(where: { $0.id == selection }) { selection = nil }
+            return .handled
+        }
+    }
+
+    // MARK: Keyboard
+
+    private func nudge(dx: Int, dy: Int) -> KeyPress.Result {
+        guard let id = selection,
+            let index = layout.placements.firstIndex(where: { $0.id == id })
+        else { return .ignored }
+        var moved = layout.placements[index]
+        moved.col = max(0, min(moved.col + dx, layout.geometry.columns - moved.colSpan))
+        moved.row = max(0, moved.row + dy)
+        guard moved != layout.placements[index],
+            GridSolver.canPlace(moved, in: layout, ignoring: id)
+        else { return .handled }
+        edit { $0.placements[index] = moved }
+        return .handled
+    }
+
+    private func deleteSelection() -> KeyPress.Result {
+        guard let id = selection else { return .ignored }
+        remove(id)
+        return .handled
+    }
+
+    private func remove(_ id: UUID) {
+        edit { $0.placements.removeAll { $0.id == id } }
+        selection = nil
     }
 
     // MARK: Surface picker
@@ -73,25 +164,60 @@ struct LayoutEditorView: View {
             .pickerStyle(.segmented)
             .labelsHidden()
             .onChange(of: surface) { _, _ in selection = nil }
+            .help("Each surface keeps its own layout and its own undo history.")
 
             Spacer()
 
-            Toggle("Show hover elements", isOn: $hoverPreview)
-                .toggleStyle(.switch)
-                .controlSize(.small)
-                .help("Preview what appears when the pointer is over this surface.")
+            // `fixedSize` and a short label on purpose. "Show hover elements"
+            // wrapped to three lines once undo and redo joined this row, which
+            // made the toolbar taller and pushed the preview down — a cosmetic
+            // problem that also moves every element under the pointer.
+            Toggle(isOn: $hoverPreview) {
+                Image(systemName: "hand.point.up.left")
+            }
+            .toggleStyle(.button)
+            .controlSize(.small)
+            .fixedSize()
+            .help("Preview what appears when the pointer is over this surface.")
 
             // Always here, not only when the inspector is empty. It used to sit
             // in the no-selection placeholder, and nothing could clear a
             // selection — so one click on an element put Reset permanently out
             // of reach.
+            Button {
+                if let restored = history.undo(surface, current: layout) {
+                    layout = restored
+                    if !layout.placements.contains(where: { $0.id == selection }) { selection = nil }
+                }
+            } label: {
+                Image(systemName: "arrow.uturn.backward")
+            }
+            .disabled(!history.canUndo(surface))
+            .help("Undo (⌘Z)")
+
+            Button {
+                if let restored = history.redo(surface, current: layout) {
+                    layout = restored
+                    if !layout.placements.contains(where: { $0.id == selection }) { selection = nil }
+                }
+            } label: {
+                Image(systemName: "arrow.uturn.forward")
+            }
+            .disabled(!history.canRedo(surface))
+            .help("Redo (⇧⌘Z)")
+
             Button("Reset") {
-                layouts[surface] = PlayerLayouts.defaults[surface]
+                // Reset is recorded too, so it is undoable. Losing an arranged
+                // surface to a mis-click on Reset would be worse than the
+                // mis-drop undo exists for.
+                history.record(layout, for: surface)
+                layout = PlayerLayouts.defaults[surface]
                 selection = nil
             }
             .help("Restore this surface to the layout VinylPod ships with.")
         }
         .padding(12)
+        .frame(height: 52)
     }
 
     // MARK: Preview
@@ -298,9 +424,7 @@ struct LayoutEditorView: View {
             guard hasBase else { return }
         }
 
-        var updated = layout
-        updated.placements[index] = moved
-        layout = normalisingRows(updated)
+        edit { $0.placements[index] = moved }
     }
 
     /// Rows must stay contiguous from zero. Dropping onto "one past the last
@@ -371,8 +495,7 @@ struct LayoutEditorView: View {
             }
         }
         guard let placement = placed ?? nil else { return }
-        updated.placements.append(placement)
-        layout = normalisingRows(updated)
+        edit { $0.placements.append(placement) }
         selection = placement.id
     }
 
@@ -440,10 +563,7 @@ struct LayoutEditorView: View {
 
                     Divider()
                     Button(role: .destructive) {
-                        var updated = layout
-                        updated.placements.removeAll { $0.id == id }
-                        layout = normalisingRows(updated)
-                        selection = nil
+                        remove(id)
                     } label: {
                         Label("Remove from this surface", systemImage: "trash")
                     }

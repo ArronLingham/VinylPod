@@ -402,6 +402,78 @@ ok("a point in the padding is outside the grid",
                    rowHeights: heights) == nil)
 
 // ---------------------------------------------------------------------------
+print("Undo history")
+
+// Worth pinning because every failure is a silent data loss: an undo that lands
+// one step short, a redo branch that survives a new edit, or a stack that grows
+// without bound holding every layout the user ever had.
+
+// `LayoutHistory` is @MainActor because the editor drives it. Top-level code in
+// this harness is not, so the whole block runs inside an explicit hop rather
+// than the type being weakened to suit a test.
+MainActor.assumeIsolated {
+let history = LayoutHistory()
+let stateA = layout(4, [place(.artwork, 0, 0, span: 4)])
+let stateB = layout(4, [place(.artwork, 0, 0, span: 4), place(.title, 0, 1, span: 4)])
+let stateC = layout(4, [place(.artwork, 0, 0, span: 2), place(.title, 0, 1, span: 4)])
+
+ok("nothing to undo at the start", !history.canUndo(.desktop))
+ok("nothing to redo at the start", !history.canRedo(.desktop))
+
+history.record(stateA, for: .desktop)   // about to go A -> B
+ok("recording an edit enables undo", history.canUndo(.desktop))
+ok("recording an edit does not enable redo", !history.canRedo(.desktop))
+
+// Undo returns the state BEFORE the edit, given what is on screen now.
+ok("undo returns the prior state", history.undo(.desktop, current: stateB) == stateA)
+ok("undo empties the stack", !history.canUndo(.desktop))
+ok("undo enables redo", history.canRedo(.desktop))
+ok("redo returns the state undone from", history.redo(.desktop, current: stateA) == stateB)
+
+// A new edit must discard the redo branch, as it does in every editor.
+history.record(stateA, for: .desktop)
+_ = history.undo(.desktop, current: stateB)
+ok("redo is available before a new edit", history.canRedo(.desktop))
+history.record(stateA, for: .desktop)
+ok("a new edit discards the redo branch", !history.canRedo(.desktop))
+
+// A no-op edit is not worth a history entry.
+history.clear(.desktop)
+history.record(stateA, for: .desktop)
+history.record(stateA, for: .desktop)
+_ = history.undo(.desktop, current: stateB)
+ok("an identical consecutive record is dropped", !history.canUndo(.desktop))
+
+// Surfaces are independent everywhere else; an undo must not jump tabs.
+history.clear(.desktop)
+history.clear(.launcher)
+history.record(stateA, for: .desktop)
+ok("recording on one surface does not touch another", !history.canUndo(.launcher))
+ok("...and the other way round", history.canUndo(.desktop))
+
+// The stack is bounded, or a long session holds every layout ever made.
+history.clear(.desktop)
+for index in 0..<200 {
+    var churn = stateA
+    churn.geometry.padding = CGFloat(index)
+    history.record(churn, for: .desktop)
+}
+var depth = 0
+var probe = stateC
+while let previous = history.undo(.desktop, current: probe), depth < 500 {
+    probe = previous
+    depth += 1
+}
+ok("history is bounded", depth <= 50, "unwound \(depth) steps")
+ok("history is not trivially short", depth >= 40, "unwound \(depth) steps")
+
+// Undoing an empty stack is a no-op, not a crash.
+history.clear(.desktop)
+ok("undo on an empty stack returns nil", history.undo(.desktop, current: stateA) == nil)
+ok("redo on an empty stack returns nil", history.redo(.desktop, current: stateA) == nil)
+}
+
+// ---------------------------------------------------------------------------
 print("Memoisation never returns a stale answer")
 
 // solve() caches on (layout, size, hovering). A cache that returns the previous
@@ -498,6 +570,7 @@ swiftc -O -o "$WORK/tests" \
     Sources/Layout/SurfaceLayout.swift \
     Sources/Layout/GridSolver.swift \
     Sources/Layout/DefaultLayouts.swift \
+    Sources/Settings/LayoutHistory.swift \
     "$WORK/main.swift" 2>&1 | grep -v "^ *$" | grep -v "warning:" || true
 
 "$WORK/tests"
@@ -541,6 +614,16 @@ swiftc -O -o "$WORK/tests" \
 #
 #   GridSolver.canPlace -> return true unconditionally
 #       64/70 — three editor checks
+#
+#   LayoutHistory.record -> drop the `future[surface] = []` line
+#       (a new edit no longer discards the redo branch)
+#       => "a new edit discards the redo branch" FAILS
+#
+#   LayoutHistory.record -> drop the `if stack.last == layout { return }` guard
+#       => "an identical consecutive record is dropped" FAILS
+#
+#   LayoutHistory.record -> drop the `limit` trim
+#       => "history is bounded" FAILS at 200 steps
 #
 #   GridSolver.solve -> return the cache entry regardless of the key
 #       (i.e. `if let hit = cache.values.first { return hit }`)
