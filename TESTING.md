@@ -66,6 +66,23 @@ Verified by preview: the widget draws at 380x175, the full-screen player at
 Lock the screen once, by hand, and check: the widget appears, double-clicking
 the artwork expands it to full screen, and both are gone after unlocking.
 
+## Launcher widget
+
+Not reachable in VinylPod — it is wired into Anchor's launcher at integration —
+so it had been built, committed and **never once rendered**, which is the
+"complete but unreachable" shape this project keeps recording, self-inflicted.
+It has a Debug preview now:
+
+```bash
+open -n <build>/VinylPod.app --env VINYLPOD_PREVIEW_LAUNCHER=1      # hover-only controls
+open -n <build>/VinylPod.app --env VINYLPOD_PREVIEW_LAUNCHER=hover  # always visible
+```
+
+Verified: the card draws at 220pt on `.regularMaterial` with the right corner
+radius and border, and the transport is an **overlay on the artist row**, so
+revealing it adds no height. That is the hover model working on a fourth
+surface, and the reason "always visible or on hover" needed no second layout.
+
 ## Layout editor
 
 Settings → Layout. The preview is the real `PlayerSurfaceView` bound to

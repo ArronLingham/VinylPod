@@ -66,6 +66,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             LockScreenManager.shared.start()
             #if DEBUG
                 LockScreenPanelManager.shared.previewIfRequested()
+                LauncherPreview.showIfRequested()
             #endif
         }
     }
