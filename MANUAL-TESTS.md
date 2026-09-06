@@ -11,10 +11,12 @@ Tick as you go. If something fails, the file to look at is named.
 ## 1. Playback — do this first
 
 **Nothing in this repo has ever seen a real track.** Every check so far ran
-against `MusicManager`'s placeholder (`I'm Handsome` / `Me` / `Self Love` —
-those strings are its defaults, not a bug) or against the editor's frozen
-sample. If the controller layer is wrong, some of what is built on top of it is
-wrong too, so this is the highest-value hour you can spend.
+against an empty player or the editor's frozen sample. If the controller layer
+is wrong, some of what is built on top of it is wrong too, so this is the
+highest-value hour you can spend.
+
+(The player used to show `I'm Handsome` / `Me` / `Self Love` when idle — Anchor's
+placeholder joke. That is fixed; §7 covers what idle should look like now.)
 
 There is an **Automation permission dialog still open on your screen** from my
 attempt at this. Allow it, or dismiss it and let VinylPod prompt you itself.
