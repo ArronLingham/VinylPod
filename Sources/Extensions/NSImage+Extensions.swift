@@ -132,8 +132,11 @@ extension NSImage {
                 return
             }
             
-            let width = Int(targetSize.width)
-            let height = Int(targetSize.height)
+            // An NSImage can report a NaN or absurd size — a malformed file,
+            // or a PDF rep with no intrinsic size — and `Int(NaN)` traps.
+            let width = Int(exactly: targetSize.width.rounded()) ?? 0
+            let height = Int(exactly: targetSize.height.rounded()) ?? 0
+            guard width > 0, height > 0 else { return }
             let totalPixels = width * height
             
             let colorSpace = CGColorSpaceCreateDeviceRGB()

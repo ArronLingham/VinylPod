@@ -683,7 +683,10 @@ private enum SpotifyCanvasProtobuf {
     }
 
     private static func varint(for value: Int) -> Data {
-        var remaining = UInt64(value)
+        // `UInt64(negative)` traps. Every caller passes a field key or a length
+        // and none can legitimately be negative, so clamping rather than
+        // crashing is the right failure: a malformed request beats a dead app.
+        var remaining = UInt64(max(0, value))
         var buffer = Data()
 
         repeat {

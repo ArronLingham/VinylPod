@@ -83,11 +83,21 @@ extension Double {
     @inline(__always) @inlinable var intround: Int {
         rounded().i
     }
-    
+
+    /// `Int(exactly:)`, not `Int(self)`.
+    ///
+    /// `Int(aDouble)` **traps** on NaN and on anything outside Int's range —
+    /// not an exception, a hard crash. Anchor took a SIGTRAP from exactly this
+    /// shape while drawing elapsed time, because a live stream reports a NaN
+    /// duration as a matter of course.
+    ///
+    /// Nothing calls this today, which is why it is worth fixing now: an
+    /// unguarded conversion behind a one-character property name is a trap the
+    /// first caller walks into, and they will not be looking.
     @inline(__always) @inlinable var i: Int {
-        Int(self)
+        Int(exactly: rounded(.towardZero)) ?? 0
     }
-    
+
     var evenInt: Int {
         let x = intround
         return x + x % 2
@@ -98,9 +108,10 @@ extension CGFloat {
     @inline(__always) @inlinable var intround: Int {
         rounded().i
     }
-    
+
+    /// See the note on `Double.i`. Same trap, same fix.
     @inline(__always) @inlinable var i: Int {
-        Int(self)
+        Int(exactly: rounded(.towardZero)) ?? 0
     }
     
     var evenInt: Int {

@@ -225,6 +225,31 @@ belongs in the settings pane instead.
 renderer for a placeable element, and observing a notification nothing posts
 each make it fail.
 
+## Stress
+
+`tests/run_runtime_stress.sh` — **LIVE**, and not part of the unit run. It
+launches the real app and writes hostile values into the real preferences
+domain, backing it up first and restoring it on the way out, including on
+failure.
+
+It exists because the unit harness tests `GridSolver` against layouts a
+programmer wrote. This tests it against layouts nobody wrote: a span of 900, a
+negative row, a column past the grid, fifty copies of one element in one cell,
+zero columns, JSON that is not a layout at all. Those arrive from a hand-edited
+plist, from settings synced off a machine running a newer version, or from a
+bug.
+
+Covers: every numeric key at ±99999999 and 0; type confusion (a 500-character
+string, an emoji, a path traversal and a SQL fragment written into enum, Double
+and Bool keys); eleven malformed layouts; and 240 boolean flips against a
+running app.
+
+**Result: survived everything, zero crash reports.**
+
+**Proved non-vacuous.** Adding `precondition(geometry.columns > 0)` to
+`GridSolver.solve` — removing the `max(1, columns)` clamp — turns it red on the
+zero-column and negative-column layouts and reports the crash file.
+
 ## Findings from the adversarial review that are NOT fixed
 
 A four-agent review ran against the finished code. **Its verification pass never
